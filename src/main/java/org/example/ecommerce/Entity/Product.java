@@ -37,4 +37,9 @@ public class Product {
 
     @OneToMany(mappedBy = "product")
     private List<ProductVariation> variations;
+
+    @OneToMany(mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    private List<ProductReview> reviews;
 }
