@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -13,25 +11,26 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private String name;
+     String name;
 
     @ManyToOne
     @JoinColumn(name = "parent_category_id")
-    private Category parentCategory;
+     Category parentCategory;
 
     @OneToMany(mappedBy = "parentCategory")
-    private List<Category> subCategories;
+     List<Category> subCategories;
 
     @OneToMany(mappedBy = "category",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<CategoryMetadataFieldValue> metadataFieldValues;
+     List<CategoryMetadataFieldValue> metadataFieldValues;
 
     @OneToMany(mappedBy = "category")
-    private List<Product> products;
+     List<Product> products;
 }

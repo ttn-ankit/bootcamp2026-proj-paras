@@ -2,6 +2,7 @@ package org.example.ecommerce.Entity;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.io.Serializable;
 
@@ -11,9 +12,10 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CartId implements Serializable {
 
-    private Long customerId;
-    private Long productVariationId;
+     Long customerId;
+     Long productVariationId;
 
 }

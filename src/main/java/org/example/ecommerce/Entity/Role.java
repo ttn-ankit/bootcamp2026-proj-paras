@@ -20,6 +20,4 @@ public class Role {
     private Long Id;
 
     private String authority;
-    @OneToMany(mappedBy = "role")
-    private List<UserRole> userRoles;
 }

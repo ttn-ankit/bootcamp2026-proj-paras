@@ -17,26 +17,23 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "Users",
-        uniqueConstraints = @UniqueConstraint(columnNames = "email"))
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "Users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Email(message = "Invalid email format", regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$")
-    @NotBlank(message = "Email cannot be blank")
     @Column(nullable = false, unique = true)
     private String email;
-    @NotBlank
-    @Size(min = 2, max = 50)
+
+    @Column(nullable = false )
     private String firstName;
 
     private String middleName;
 
     private String lastName;
-    @NotBlank
-    @Size(min = 2, max = 50)
+
     private String password;
 
     private Boolean isDeleted;
@@ -48,16 +45,13 @@ public class User {
 
     private LocalDateTime passwordUpdateDate;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserRole> userRoles;
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "USER_ROLE" ,
+            joinColumns = @JoinColumn(name = "USER_ID"),foreignKey = @ForeignKey(name = "FK_USER_ROLE_USER"),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID") , inverseForeignKey = @ForeignKey(name = "FK_USER_ROLE_ROLE"))
+    private List<Role> roles;
 
-    @OneToOne(mappedBy = "user")
-    private Customer customer;
-
-    @OneToOne(mappedBy = "user")
-    private Seller seller;
-
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private List<Address> addresses;
 
 }

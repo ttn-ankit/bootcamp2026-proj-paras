@@ -13,19 +13,14 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Seller {
+@PrimaryKeyJoinColumn(name = "USER_ID", foreignKey = @ForeignKey(name = "FK_USER_SELLER"))
+public class Seller extends User{
 
-    @Id
-    private Long userId;
-
+    @Column(unique = true, nullable = false)
     private String gst;
+    @Column(unique = true, nullable = false)
     private String companyName;
     private String companyContact;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "user_id")
-    private User user;
 
     @OneToMany(mappedBy = "seller")
     private List<Product> products;
