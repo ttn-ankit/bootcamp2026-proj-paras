@@ -1,6 +1,5 @@
 package org.example.ecommerce.Security;
 
-import org.example.ecommerce.Emails.AccountLocked;
 import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
 import org.example.ecommerce.Service.AccountLockedIncorrectPassword;
 import org.example.ecommerce.Service.CustomUserDetailsService;

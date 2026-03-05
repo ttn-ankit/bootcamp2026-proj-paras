@@ -1,9 +1,10 @@
 package org.example.ecommerce.Security;
 
-import javax.naming.AuthenticationException;
+
+import org.springframework.security.core.AuthenticationException;
 
 public class CustomAuthenticationException extends AuthenticationException {
-    public CustomAuthenticationException(String explanation) {
-        super(explanation);
+    public CustomAuthenticationException(String msg) {
+        super(msg);
     }
 }

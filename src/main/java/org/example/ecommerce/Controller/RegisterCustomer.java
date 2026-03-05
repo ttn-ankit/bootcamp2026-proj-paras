@@ -38,7 +38,7 @@ public class RegisterCustomer {
         return customerService.activateCustomer(token,locale);
     }
 
-    @PostMapping("resend")
+    @PostMapping("/resend")
     public BasicResponse reSendActivationLink(@RequestBody Map<String, Object> requestBody, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
         String email = (String) requestBody.get("email");
         return customerService.reSendActivationLink(email, locale);
