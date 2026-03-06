@@ -13,7 +13,7 @@ public class ForgotPassword {
 
     @Async
     public void sendForgetPasswordEmail(String toEmail, String token){
-        String verificationUrl = "http://localhost:8080/api/user/public/reset/reset-password?token=" + token;
+        String verificationUrl = "http://localhost:8080/api/user/reset?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);

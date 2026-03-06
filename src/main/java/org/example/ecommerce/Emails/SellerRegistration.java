@@ -14,7 +14,7 @@ public class SellerRegistration {
     @Async
     public void sendRegistrationStatusEmail(String email) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("anurag2@tothenew.com");
+        message.setTo(email);
         message.setSubject("Registration Details Submitted for Seller Account");
         message.setText("We have Successfully Received your Application for Registration as a Seller " +
                 "to our website Ecommerce " +

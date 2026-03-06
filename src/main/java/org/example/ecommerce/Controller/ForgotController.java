@@ -32,7 +32,6 @@ public class ForgotController {
     @PostMapping("/forgot-password")
     public BasicResponse forgetPassword(@RequestBody Map<String, String> request, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
         String email = request.get("email");
-
         if(email == null || email.trim().isEmpty()){
             throw new InvalidEmail("email is not valid");
         }

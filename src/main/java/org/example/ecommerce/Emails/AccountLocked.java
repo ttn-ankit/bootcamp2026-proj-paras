@@ -14,9 +14,9 @@ public class AccountLocked {
     @Async
     public void sendAccountLockedEmail(String toEmail){
 
-        String resetPasswordLink = "http://localhost:8080/api/user/public/forget-password";
+        String resetPasswordLink = "http://localhost:8080/api/user/forget-password";
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("anurag2@tothenew.com");
+        message.setTo(toEmail);
         message.setSubject("Account Locked");
         message.setText("Your Account has been Locked. Please visit "+resetPasswordLink);
         mailSender.send(message);

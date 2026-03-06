@@ -16,7 +16,7 @@ public class CustomerRegistration {
 
     @Async
     public void sendVerificationEmail(String toEmail, String token){
-        String verificationUrl = "http://localhost:8080/api/user/public/customer/verify/registration?token=" + token;
+        String verificationUrl = "http://localhost:8080/api/user/verify/?token=" + token;
 
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);

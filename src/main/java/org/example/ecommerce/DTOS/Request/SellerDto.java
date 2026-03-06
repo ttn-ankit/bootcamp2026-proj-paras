@@ -22,10 +22,7 @@ public class SellerDto extends UserDto{
      String companyContact;
 
     @NotBlank(message = "Company Name can not be blank")
-    @Pattern(regexp = "^(?=(?:[^A-Za-z]*[A-Za-z]){3,})([A-Za-z]+(?: [A-Za-z]+)*)$",message = "give a valid company name")
      String companyName;
-
-//    private List<ProductDTO> productsDTO;
 
     @NotNull(message = "address for the seller is required")
     @Valid

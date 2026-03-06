@@ -1,11 +1,9 @@
 package org.example.ecommerce.Security;
 
-import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
 import org.example.ecommerce.Service.AccountLockedIncorrectPassword;
 import org.example.ecommerce.Service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,7 +13,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
     @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
+    private BCryptPasswordEncoder passwordEncoder;
     @Autowired
     private CustomUserDetailsService userDetailsService;
     @Autowired
@@ -28,13 +26,24 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         String password = authentication.getCredentials().toString();
         UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-        if (!bCryptPasswordEncoder.matches(password, userDetails.getPassword())) {
-            accountLocked.passwordIncorrectCountIncrease(email);
-            throw new AccountNotActiveException("Invalid username or password");
+        if (!userDetails.isEnabled()) {
+            throw new DisabledException("Account not active");
         }
 
-        return new UsernamePasswordAuthenticationToken(userDetails, password, userDetails.getAuthorities());
+        if (!userDetails.isAccountNonLocked()) {
+            throw new LockedException("Account is locked");
+        }
 
+        if (!passwordEncoder.matches(password, userDetails.getPassword())) {
+            accountLocked.passwordIncorrectCountIncrease(email);
+            throw new BadCredentialsException("Invalid username or password");
+        }
+
+        return new UsernamePasswordAuthenticationToken(
+                userDetails,
+                null,
+                userDetails.getAuthorities()
+        );
     }
 
     @Override

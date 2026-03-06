@@ -6,6 +6,7 @@ import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
 import org.example.ecommerce.GlobalExceptions.InvalidJwtToken;
 import org.example.ecommerce.GlobalExceptions.NotPermitted;
+import org.example.ecommerce.GlobalExceptions.UserNotFoundException;
 import org.example.ecommerce.Repository.ForgetPasswordRepository;
 import org.example.ecommerce.Repository.UserRepository;
 import org.example.ecommerce.Tokens.JwtForgot;
@@ -42,6 +43,9 @@ public class ForgotPasswordService {
             throw new InvalidJwtToken("The Request Token is Changed. Please use latest One.");
         }
         User user = userRepository.findByEmail(email);
+        if(user==null){
+            throw new UserNotFoundException("User Not Found with email: "+email);
+        }
         if(!user.getIsActive()){
             throw new AccountNotActiveException("Activate you account first");
         }
