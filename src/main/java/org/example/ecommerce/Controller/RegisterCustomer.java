@@ -2,11 +2,13 @@ package org.example.ecommerce.Controller;
 
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.CustomerDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
 import org.example.ecommerce.Service.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -17,11 +19,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/user")
 @Validated
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RegisterCustomer {
-    @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private MessageSource messageSource;
+     CustomerService customerService;
+     MessageSource messageSource;
 
     @PostMapping("/register-customer")
     public BasicResponse registerCustomer(@Valid @RequestBody CustomerDto customerDto, @RequestHeader(name = "Accept-Language", required = false) Locale locale){

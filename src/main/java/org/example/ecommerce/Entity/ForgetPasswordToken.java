@@ -2,19 +2,18 @@ package org.example.ecommerce.Entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Setter
 @Getter
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 public class ForgetPasswordToken {
     @Id
-    private String email;
+     String email;
 
-    private String forgetToken;
+     String forgetToken;
 }

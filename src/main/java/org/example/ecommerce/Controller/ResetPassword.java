@@ -3,6 +3,9 @@ package org.example.ecommerce.Controller;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.websocket.server.PathParam;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
@@ -17,11 +20,11 @@ import java.util.Locale;
 @Validated
 @RestController
 @RequestMapping("/api/user")
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class ResetPassword {
-    @Autowired
-    private ForgotPasswordService passwordService;
-    @Autowired
-    private MessageSource messageSource;
+     ForgotPasswordService passwordService;
+     MessageSource messageSource;
 
     @PutMapping("/reset")
     public BasicResponse resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto,

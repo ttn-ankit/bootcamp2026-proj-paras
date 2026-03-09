@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -13,22 +11,23 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class OrderProduct {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private Integer quantity;
-    private Double price;
+     Integer quantity;
+     Double price;
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    private Order order;
+     Order order;
 
     @ManyToOne
     @JoinColumn(name = "product_variation_id")
-    private ProductVariation productVariation;
+     ProductVariation productVariation;
 
     @OneToMany(mappedBy = "orderProduct")
-    private List<OrderStatus> statuses;
+     List<OrderStatus> statuses;
 }

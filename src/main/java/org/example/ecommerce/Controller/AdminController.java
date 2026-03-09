@@ -1,5 +1,8 @@
 package org.example.ecommerce.Controller;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
 import org.example.ecommerce.DTOS.Response.SellerGetAllResponse;
@@ -16,12 +19,11 @@ import java.util.Locale;
 @RestController
 @RequestMapping("/api/admin")
 @Validated
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class AdminController {
-
-    @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private SellerService sellerService;
+     CustomerService customerService;
+     SellerService sellerService;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping("/activate-customer/{id}")

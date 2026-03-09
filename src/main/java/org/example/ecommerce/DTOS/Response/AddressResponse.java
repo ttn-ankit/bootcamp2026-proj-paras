@@ -1,23 +1,22 @@
 package org.example.ecommerce.DTOS.Response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class AddressResponse {
 
-    private Long id;
+     Long id;
 
-    private String city;
-    private String state;
-    private String country;
-    private String addressLine;
-    private Integer zipCode;
-    private String label;
+     String city;
+     String state;
+     String country;
+     String addressLine;
+     Integer zipCode;
+     String label;
 
 }

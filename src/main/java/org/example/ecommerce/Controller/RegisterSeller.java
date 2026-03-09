@@ -1,6 +1,9 @@
 package org.example.ecommerce.Controller;
 
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.SellerDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
@@ -15,12 +18,12 @@ import java.util.Locale;
 @RestController
 @Validated
 @RequestMapping("/api/user")
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class RegisterSeller {
 
-    @Autowired
-    private SellerService service;
-    @Autowired
-    private MessageSource messageSource;
+     SellerService service;
+     MessageSource messageSource;
 
     @PostMapping("/register-seller")
     public BasicResponse registerSeller(@Valid @RequestBody SellerDto sellerDto, @RequestHeader(name = "Accept-Language", required = false) Locale locale){

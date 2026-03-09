@@ -1,20 +1,22 @@
 package org.example.ecommerce.Service;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Emails.AccountLocked;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.InvalidEmail;
 import org.example.ecommerce.Repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class AccountLockedIncorrectPassword {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AccountLocked accountLocked;
+    UserRepository userRepository;
+    AccountLocked accountLocked;
 
 
     public void passwordIncorrectCountIncrease(String email){

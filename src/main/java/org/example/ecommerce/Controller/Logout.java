@@ -1,6 +1,9 @@
 package org.example.ecommerce.Controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.Service.LogoutService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,11 +17,11 @@ import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/user")
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class Logout {
-    @Autowired
-    private LogoutService logoutService;
-    @Autowired
-    private MessageSource messageSource;
+     LogoutService logoutService;
+     MessageSource messageSource;
 
     @PostMapping("/logout")
     public BasicResponse logout(HttpServletRequest request,@RequestHeader(name = "Accept-Language", required = false) Locale locale){

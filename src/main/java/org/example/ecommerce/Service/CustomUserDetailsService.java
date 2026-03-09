@@ -1,6 +1,9 @@
 package org.example.ecommerce.Service;
 
 import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Emails.AccountLocked;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
@@ -16,11 +19,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CustomUserDetailsService implements UserDetailsService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private AccountLocked accountLocked;
+     UserRepository userRepository;
+     AccountLocked accountLocked;
 
     @Override
     @Transactional

@@ -3,8 +3,10 @@ package org.example.ecommerce.Auditing;
 import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldDefaults;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -16,21 +18,22 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public abstract class DataAudit {
 
     @CreatedDate
     @Column(updatable = false,nullable = false)
-    private LocalDateTime createdAt;
+     LocalDateTime createdAt;
 
     @LastModifiedDate
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+     LocalDateTime updatedAt;
 
     @CreatedBy
     @Column(updatable = false,nullable = false)
-    private String createdBy;
+     String createdBy;
 
     @LastModifiedBy
     @Column(nullable = false)
-    private String updatedBy;
+     String updatedBy;
 }

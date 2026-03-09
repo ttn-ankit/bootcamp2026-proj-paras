@@ -1,15 +1,18 @@
 package org.example.ecommerce.Emails;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class ForgotPassword {
-    @Autowired
-    private JavaMailSender mailSender;
+    JavaMailSender mailSender;
 
     @Async
     public void sendForgetPasswordEmail(String toEmail, String token){

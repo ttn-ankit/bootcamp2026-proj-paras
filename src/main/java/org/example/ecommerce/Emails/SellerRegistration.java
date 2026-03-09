@@ -1,15 +1,18 @@
 package org.example.ecommerce.Emails;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SellerRegistration {
-    @Autowired
-    private JavaMailSender mailSender;
+     JavaMailSender mailSender;
 
     @Async
     public void sendRegistrationStatusEmail(String email) {

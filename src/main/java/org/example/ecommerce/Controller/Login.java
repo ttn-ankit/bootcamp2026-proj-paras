@@ -2,13 +2,13 @@ package org.example.ecommerce.Controller;
 
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.LoginRequest;
 import org.example.ecommerce.DTOS.Response.LoginResponse;
 import org.example.ecommerce.Service.AccessTokenService;
 import org.example.ecommerce.Service.CustomUserDetailsService;
 import org.example.ecommerce.Tokens.JwtLogin;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,16 +19,14 @@ import java.util.Locale;
 
 @RestController
 @RequestMapping("/api/user")
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class Login {
 
-    @Autowired
+
     AuthenticationManager authenticationManager;
-    @Autowired
     AccessTokenService tokenService;
-    @Autowired
     CustomUserDetailsService userDetailsService;
-    @Autowired
     MessageSource messageSource;
 
     @PostMapping("/login")

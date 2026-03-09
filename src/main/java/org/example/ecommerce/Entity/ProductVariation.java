@@ -1,33 +1,32 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class ProductVariation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private Integer quantityAvailable;
-    private Double price;
+     Integer quantityAvailable;
+     Double price;
 
     @Column(columnDefinition = "TEXT")
-    private String metadata;
+     String metadata;
 
-    private String primaryImageName;
-    private Boolean isActive;
+     String primaryImageName;
+     Boolean isActive;
 
     @ManyToOne
     @JoinColumn(name = "product_id")
-    private Product product;
+     Product product;
 
 
 }

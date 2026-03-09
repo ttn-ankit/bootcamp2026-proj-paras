@@ -2,6 +2,9 @@ package org.example.ecommerce.Service;
 
 
 import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.CustomerDto;
 import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
@@ -31,26 +34,19 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CustomerService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Autowired
-    private CustomerRegistration customerRegistration;
-    @Autowired
-    private ActivationTokenRepository activationTokenRepo;
-    @Autowired
-    private CustomerRepository customerRepository;
-    @Autowired
-    private AccountActivated accountActivatedEmail;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private AddressRepository addressRepository;
-    @Autowired
-    private MessageSource messageSource;
+    UserRepository userRepository;
+     BCryptPasswordEncoder bCryptPasswordEncoder;
+     CustomerRegistration customerRegistration;
+     ActivationTokenRepository activationTokenRepo;
+   CustomerRepository customerRepository;
+     AccountActivated accountActivatedEmail;
+   RoleRepository roleRepository;
+     AddressRepository addressRepository;
+     MessageSource messageSource;
 
     public String registerCustomer(CustomerDto dto) {
         Customer customer = new Customer();

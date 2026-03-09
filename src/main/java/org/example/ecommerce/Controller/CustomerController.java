@@ -2,12 +2,14 @@ package org.example.ecommerce.Controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
 import org.example.ecommerce.Service.CustomerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -18,12 +20,12 @@ import java.util.Locale;
 @RestController
 @Validated
 @RequestMapping("/api/customer")
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class CustomerController {
 
-    @Autowired
-    private CustomerService customerService;
-    @Autowired
-    private MessageSource messageSource;
+    CustomerService customerService;
+    MessageSource messageSource;
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/add-address")

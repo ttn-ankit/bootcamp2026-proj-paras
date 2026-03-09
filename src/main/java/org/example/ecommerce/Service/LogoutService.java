@@ -1,13 +1,16 @@
 package org.example.ecommerce.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
 @Service
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class LogoutService {
 
-    @Autowired
-    private AccessTokenService tokenService;
+     AccessTokenService tokenService;
 
     public void logoutUser(String token) {
         tokenService.deleteToken(token);

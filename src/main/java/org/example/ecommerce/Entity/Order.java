@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Entity.Enum.PaymentMethodEnum;
 
 import java.time.LocalDateTime;
@@ -16,21 +14,22 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private Double amountPaid;
-    private LocalDateTime dateCreated;
+     Double amountPaid;
+     LocalDateTime dateCreated;
 
     @Enumerated(EnumType.STRING)
-    private PaymentMethodEnum paymentMethod;
+     PaymentMethodEnum paymentMethod;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")
-    private Customer customer;
+     Customer customer;
 
     @OneToMany(mappedBy = "order")
-    private List<OrderProduct> orderProducts;
+     List<OrderProduct> orderProducts;
 }

@@ -1,16 +1,15 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Auditing.DataAudit;
 
 import java.time.LocalDateTime;
 import java.util.List;
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
@@ -19,36 +18,36 @@ import java.util.List;
 public class User  extends DataAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
     @Column(nullable = false, unique = true)
-    private String email;
+     String email;
 
     @Column(nullable = false )
-    private String firstName;
+     String firstName;
 
-    private String middleName;
+     String middleName;
 
-    private String lastName;
+     String lastName;
 
-    private String password;
+     String password;
 
-    private Boolean isDeleted;
-    private Boolean isActive;
-    private Boolean isExpired;
-    private Boolean isLocked;
+     Boolean isDeleted;
+     Boolean isActive;
+     Boolean isExpired;
+     Boolean isLocked;
 
-    private Integer invalidAttemptCount;
+     Integer invalidAttemptCount;
 
-    private LocalDateTime passwordUpdateDate;
+     LocalDateTime passwordUpdateDate;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "USER_ROLE" ,
             joinColumns = @JoinColumn(name = "USER_ID"),foreignKey = @ForeignKey(name = "FK_USER_ROLE_USER"),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID") , inverseForeignKey = @ForeignKey(name = "FK_USER_ROLE_ROLE"))
-    private List<Role> roles;
+     List<Role> roles;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Address> addresses;
+     List<Address> addresses;
 
 }

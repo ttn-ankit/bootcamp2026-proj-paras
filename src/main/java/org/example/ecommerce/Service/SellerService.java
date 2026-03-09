@@ -1,5 +1,8 @@
 package org.example.ecommerce.Service;
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.AddressDto;
 import org.example.ecommerce.DTOS.Request.SellerDto;
 import org.example.ecommerce.DTOS.Response.AddressResponse;
@@ -17,7 +20,6 @@ import org.example.ecommerce.Repository.RoleRepository;
 import org.example.ecommerce.Repository.SellerRepository;
 import org.example.ecommerce.Repository.UserRepository;
 import org.example.ecommerce.Tokens.JwtLogin;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -31,24 +33,18 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class SellerService {
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private BCryptPasswordEncoder bCryptPasswordEncoder;
-    @Autowired
-    private SellerRegistration sellerRegistrationEmail;
-    @Autowired
-    private SellerRepository sellerRepository;
-    @Autowired
-    private AccountActivated accountActivatedEmail;
-    @Autowired
-    private RoleRepository roleRepository;
-    @Autowired
-    private MessageSource messageSource;
+     UserRepository userRepository;
+    BCryptPasswordEncoder bCryptPasswordEncoder;
+     SellerRegistration sellerRegistrationEmail;
+     SellerRepository sellerRepository;
+     AccountActivated accountActivatedEmail;
+    RoleRepository roleRepository;
+    MessageSource messageSource;
 
-    @Autowired
-    private AddressRepository addressRepository;
+   AddressRepository addressRepository;
 
     public String registerSeller(SellerDto sellerDTO) {
 

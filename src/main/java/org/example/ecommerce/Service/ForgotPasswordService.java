@@ -1,6 +1,9 @@
 package org.example.ecommerce.Service;
 
 import jakarta.transaction.Transactional;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Entity.ForgetPasswordToken;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
@@ -11,21 +14,19 @@ import org.example.ecommerce.Repository.ForgetPasswordRepository;
 import org.example.ecommerce.Repository.UserRepository;
 import org.example.ecommerce.Tokens.JwtForgot;
 import org.example.ecommerce.Tokens.JwtLogin;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
 @Service
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class ForgotPasswordService {
 
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private BCryptPasswordEncoder passwordEncoder;
-    @Autowired
-    private ForgetPasswordRepository forgetPasswordTokenRepo;
+     UserRepository userRepository;
+     BCryptPasswordEncoder passwordEncoder;
+     ForgetPasswordRepository forgetPasswordTokenRepo;
 
     public User getForgetPasswordTokenUser(String email) {
         return userRepository.findByEmail(email);

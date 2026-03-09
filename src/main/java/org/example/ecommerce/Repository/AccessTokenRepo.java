@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Repository
 public interface AccessTokenRepo extends JpaRepository<AccessToken,String> {
 
-    public AccessToken findByToken(String token);
+     AccessToken findByToken(String token);
 
 //    @Transactional
 //    @Modifying

@@ -1,21 +1,20 @@
 package org.example.ecommerce.DTOS.Response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SellerGetAllResponse {
 
-    private String fullName;
-    private Long id;
-    private String email;
-    private String companyName;
-    private Boolean isActive;
-    private AddressResponse companyAddress;
-    private String contact;
+     String fullName;
+     Long id;
+     String email;
+     String companyName;
+     Boolean isActive;
+     AddressResponse companyAddress;
+     String contact;
 }

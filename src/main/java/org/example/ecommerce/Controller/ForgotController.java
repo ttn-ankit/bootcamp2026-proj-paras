@@ -1,6 +1,7 @@
 package org.example.ecommerce.Controller;
 
 import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.Emails.ForgotPassword;
@@ -9,7 +10,6 @@ import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
 import org.example.ecommerce.GlobalExceptions.InvalidEmail;
 import org.example.ecommerce.Service.ForgotPasswordService;
 import org.example.ecommerce.Tokens.JwtForgot;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -20,20 +20,13 @@ import java.util.Map;
 @Validated
 @RestController
 @RequestMapping("/api/user")
-@FieldDefaults(level = AccessLevel.PRIVATE)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+@RequiredArgsConstructor
 public class ForgotController {
-    @Autowired
-    ForgotPasswordService passwordService;
-    @Autowired
-    ForgotPassword forgetPasswordEmail;
-    @Autowired
-    MessageSource messageSource;
 
-//    @GetMapping("/test")
-//    public String test(){
-//        int a = 1/0;
-//        return "test";
-//    }
+    ForgotPasswordService passwordService;
+    ForgotPassword forgetPasswordEmail;
+    MessageSource messageSource;
 
     @PostMapping("/forgot-password")
     public BasicResponse forgetPassword(@RequestBody Map<String, String> request, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
