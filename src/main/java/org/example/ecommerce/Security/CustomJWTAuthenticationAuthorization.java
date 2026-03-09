@@ -17,13 +17,14 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Component
-public class CustomJWTAuthenticationAuthorization extends OncePerRequestFilter {
+public class    CustomJWTAuthenticationAuthorization extends OncePerRequestFilter {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
 
     @Autowired
     private AccessTokenService tokenService;
+
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

@@ -3,17 +3,23 @@ package org.example.ecommerce.Service;
 
 import jakarta.transaction.Transactional;
 import org.example.ecommerce.DTOS.Request.CustomerDto;
+import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
+import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
 import org.example.ecommerce.Emails.AccountActivated;
 import org.example.ecommerce.Emails.CustomerRegistration;
 import org.example.ecommerce.Entity.*;
 import org.example.ecommerce.GlobalExceptions.DuplicateEmailException;
 import org.example.ecommerce.GlobalExceptions.InvalidEmail;
+import org.example.ecommerce.GlobalExceptions.NotPermitted;
 import org.example.ecommerce.GlobalExceptions.UserNotFoundException;
 import org.example.ecommerce.Repository.*;
 import org.example.ecommerce.Tokens.JwtLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -220,4 +226,65 @@ public class CustomerService {
 
     }
 
+    public void addNewCustomerAddress(String token, AddressResponse address) {
+
+        String email = JwtLogin.validateLoginAccessToken(token);
+        Customer customer = customerRepository.findByEmail(email);
+        List<Address> addresses = customer.getAddresses();
+        Address address1 = new Address();
+        address1.setAddressLine(address.getAddressLine());
+        address1.setState(address.getState());
+        address1.setCity(address.getCity());
+        address1.setCountry(address.getCountry());
+        address1.setZipCode(address.getZipCode());
+        address1.setLabel(address.getLabel());
+        address1.setUser(customer);
+
+        addresses.add(address1);
+
+
+        customerRepository.save(customer);
+    }
+
+    public void deletedThisAddress(Long id, String token) {
+
+        String email = JwtLogin.validateLoginAccessToken(token);
+        Customer customer = customerRepository.findByEmail(email);
+
+        Address myAddress = addressRepository.findById(id).orElseThrow(
+                ()-> new UserNotFoundException("Address with this id is not found ")
+        );
+
+
+        if(customer.getId()!=myAddress.getUser().getId()){
+            throw new NotPermitted("Not your address you can not delete this");
+        }
+
+        addressRepository.delete(myAddress);
+
+
+    }
+
+    public List<CustomerGetAllResponse> getAllCustomer(Integer pageSize, Integer pageOffset, String sort, String email) {
+
+        Page<Customer> pageOfCustomer =
+                customerRepository.findAll(PageRequest.of(pageOffset,pageSize, Sort.by(sort).descending()),email);
+
+        List<Customer> customersFromDatabase = pageOfCustomer.getContent();
+
+        List<CustomerGetAllResponse> customers = customersFromDatabase.stream()
+                .map(customer -> {
+                    CustomerGetAllResponse response = new CustomerGetAllResponse();
+                    response.setId(customer.getId());
+                    response.setFullName((
+                            Optional.ofNullable(customer.getFirstName()).orElse("")+" "+
+                                    Optional.ofNullable(customer.getMiddleName()).orElse("")+" "+
+                                    Optional.ofNullable(customer.getLastName()).orElse("")));
+                    response.setIsActive(customer.getIsActive());
+                    response.setEmail(customer.getEmail());
+                    return response;
+                }).collect(Collectors.toUnmodifiableList());
+
+        return customers;
+    }
     }

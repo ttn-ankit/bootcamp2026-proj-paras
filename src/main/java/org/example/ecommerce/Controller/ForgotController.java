@@ -29,6 +29,12 @@ public class ForgotController {
     @Autowired
     MessageSource messageSource;
 
+//    @GetMapping("/test")
+//    public String test(){
+//        int a = 1/0;
+//        return "test";
+//    }
+
     @PostMapping("/forgot-password")
     public BasicResponse forgetPassword(@RequestBody Map<String, String> request, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
         String email = request.get("email");

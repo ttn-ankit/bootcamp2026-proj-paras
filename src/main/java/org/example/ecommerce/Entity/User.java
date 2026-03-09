@@ -1,14 +1,11 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.processing.Pattern;
+import org.example.ecommerce.Auditing.DataAudit;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -19,7 +16,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "Users")
-public class User {
+public class User  extends DataAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

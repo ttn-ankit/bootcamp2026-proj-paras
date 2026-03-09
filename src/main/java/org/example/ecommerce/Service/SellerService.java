@@ -2,7 +2,9 @@ package org.example.ecommerce.Service;
 
 import org.example.ecommerce.DTOS.Request.AddressDto;
 import org.example.ecommerce.DTOS.Request.SellerDto;
+import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
+import org.example.ecommerce.DTOS.Response.SellerGetAllResponse;
 import org.example.ecommerce.Emails.AccountActivated;
 import org.example.ecommerce.Emails.SellerRegistration;
 import org.example.ecommerce.Entity.Address;
@@ -17,11 +19,16 @@ import org.example.ecommerce.Repository.UserRepository;
 import org.example.ecommerce.Tokens.JwtLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class SellerService {
@@ -143,6 +150,50 @@ public class SellerService {
         seller.setPasswordUpdateDate(LocalDateTime.now());
         sellerRepository.save(seller);
         accountActivatedEmail.sendAccountPasswordChangedEmail("your password has been changed",email);
+    }
+
+    @Transactional
+    public List<SellerGetAllResponse> getAllSeller(Integer pageSize, Integer pageOffset, String sort, String email) {
+        Page<Seller> pageOfSeller =
+                sellerRepository.findAll(PageRequest.of(pageOffset, pageSize, Sort.by(sort)),email);
+        List<Seller> sellerFromDatabase = pageOfSeller.getContent();
+        List<SellerGetAllResponse> sellers = sellerFromDatabase.stream()
+                .map(seller -> {
+                    SellerGetAllResponse response = new SellerGetAllResponse();
+                    response.setId(seller.getId());
+                    response.setContact(seller.getCompanyContact());
+                    response.setFullName(
+                            Optional.ofNullable(seller.getFirstName()).orElse("") + " " +
+                                    Optional.ofNullable(seller.getMiddleName()).orElse("") + " " +
+                                    Optional.ofNullable(seller.getLastName()).orElse("")
+                    );
+                    response.setEmail(seller.getEmail());
+                    response.setCompanyName(seller.getCompanyName());
+                    response.setIsActive(seller.getIsActive());
+
+                    List<Address> addresses = seller.getAddresses();
+
+                    if (addresses != null && !addresses.isEmpty()) {
+                        Address sellerAddress = addresses.get(0);
+                        AddressResponse address = new AddressResponse();
+                        address.setZipCode(sellerAddress.getZipCode());
+                        address.setAddressLine(sellerAddress.getAddressLine());
+                        address.setCity(sellerAddress.getCity());
+                        address.setCountry(sellerAddress.getCountry());
+                        address.setState(sellerAddress.getState());
+                        address.setLabel(sellerAddress.getLabel());
+                        address.setId(sellerAddress.getId());
+                        response.setCompanyAddress(address);
+
+                    }
+
+                    return response;
+                })
+                .collect(Collectors.toUnmodifiableList());
+
+
+        return sellers;
+
     }
 
 
