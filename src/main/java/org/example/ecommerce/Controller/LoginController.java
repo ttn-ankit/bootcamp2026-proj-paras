@@ -21,7 +21,7 @@ import java.util.Locale;
 @RequestMapping("/api/user")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class Login {
+public class LoginController {
 
 
     AuthenticationManager authenticationManager;

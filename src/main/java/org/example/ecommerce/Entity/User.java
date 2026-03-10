@@ -41,7 +41,7 @@ public class User  extends DataAudit {
 
      LocalDateTime passwordUpdateDate;
 
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "USER_ROLE" ,
             joinColumns = @JoinColumn(name = "USER_ID"),foreignKey = @ForeignKey(name = "FK_USER_ROLE_USER"),
             inverseJoinColumns = @JoinColumn(name = "ROLE_ID") , inverseForeignKey = @ForeignKey(name = "FK_USER_ROLE_ROLE"))

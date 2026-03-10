@@ -9,23 +9,25 @@ import org.example.ecommerce.DTOS.Request.CustomerDto;
 import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
+import org.example.ecommerce.DTOS.Response.CustomerProfileViewDto;
 import org.example.ecommerce.Emails.AccountActivated;
 import org.example.ecommerce.Emails.CustomerRegistration;
 import org.example.ecommerce.Entity.*;
-import org.example.ecommerce.GlobalExceptions.DuplicateEmailException;
-import org.example.ecommerce.GlobalExceptions.InvalidEmail;
-import org.example.ecommerce.GlobalExceptions.NotPermitted;
-import org.example.ecommerce.GlobalExceptions.UserNotFoundException;
+import org.example.ecommerce.GlobalExceptions.*;
 import org.example.ecommerce.Repository.*;
 import org.example.ecommerce.Tokens.JwtLogin;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -211,8 +213,11 @@ public class CustomerService {
 
     }
 
-    public void updateProfilePassword(String token, String password) {
+    public void updateProfilePassword(String token, String password, String confirmPassword) {
 
+        if(!password.equals(confirmPassword)){
+            throw new PasswordDoesNotMatchException("Passwords do not match.");
+        }
         String email = JwtLogin.validateLoginAccessToken(token);
         Customer customer = customerRepository.findByEmail(email);
         customer.setPassword(bCryptPasswordEncoder.encode(password));
@@ -283,4 +288,130 @@ public class CustomerService {
 
         return customers;
     }
+
+
+    public CustomerProfileViewDto getMyProfile(String token) {
+        String email = JwtLogin.validateLoginAccessToken(token);
+        Customer customer = customerRepository.findByEmail(email);
+        CustomerProfileViewDto customerProfile = new CustomerProfileViewDto();
+        customerProfile.setId(customer.getId());
+        customerProfile.setFirstName(customer.getFirstName());
+        customerProfile.setLastName(customer.getLastName());
+        customerProfile.setContact(customer.getContact());
+        customerProfile.setIsActive(customer.getIsActive());
+        String imageUrl = GetAndSaveImage.resolveImageUrl(customer.getId());
+        customerProfile.setImage(imageUrl);
+        return customerProfile;
+
     }
+
+    public List<AddressResponse> getAllCustomerAddress(String token) {
+
+        String email = JwtLogin.validateLoginAccessToken(token);
+        Customer customer = customerRepository.findByEmail(email);
+        List<AddressResponse> customerAddresses = new ArrayList<>();
+        try {
+            customerAddresses = customer.getAddresses().stream()
+                    .map(
+                            address -> {
+                                AddressResponse addressDTO = new AddressResponse();
+                                addressDTO.setCity(address.getCity());
+                                addressDTO.setState(address.getState());
+                                addressDTO.setCountry(address.getCountry());
+                                addressDTO.setLabel(address.getLabel());
+                                addressDTO.setZipCode(address.getZipCode());
+                                addressDTO.setAddressLine(address.getAddressLine());
+                                addressDTO.setId(address.getId());
+                                return addressDTO;
+                            }
+                    )
+                    .toList();
+        }
+        catch(NullPointerException e){
+
+        }
+
+        return customerAddresses;
+    }
+
+    public String updateCustomerProfileFields(String token, String firstName, String lastName, String middleName, String contact, MultipartFile image) {
+
+
+        String email = JwtLogin.validateLoginAccessToken(token);
+        Customer customer = customerRepository.findByEmail(email);
+
+        if(firstName!=null) customer.setFirstName(firstName);
+        if(lastName!=null) customer.setLastName(lastName);
+        if(middleName!=null) customer.setMiddleName(middleName);
+        if(contact!=null) customer.setContact(contact);
+
+        if (image != null && !image.isEmpty()) {
+            String originalFilename = image.getOriginalFilename();
+            String extension = "";
+
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+
+            List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
+            if (!allowedExtensions.contains(extension.toLowerCase())) {
+                throw new IllegalArgumentException("Invalid file type. Only JPG, JPEG, PNG, and WEBP are allowed.");
+            }
+
+            String uploadFolder = "images/user";
+            Path uploadPath = Paths.get(uploadFolder).toAbsolutePath();
+            try {
+                Files.createDirectories(uploadPath);
+            } catch (IOException e) {
+
+            }
+            Path imagePath = uploadPath.resolve(customer.getId() + extension);
+            try {
+                image.transferTo(imagePath.toFile());
+            } catch (IOException e) {
+
+            }
+        }
+
+        customerRepository.save(customer);
+
+
+        return "Profile updated successfully";
+    }
+
+    public void updateAddress(Long id, String city, String state, String addressLine, String label, String country, Integer zipCode, String token) {
+
+        String email = JwtLogin.validateLoginAccessToken(token);
+        Customer customer = customerRepository.findByEmail(email);
+
+        Address myAddress = addressRepository.findById(id).orElseThrow(
+                ()-> new UserNotFoundException("Address with this id is not found ")
+        );
+
+
+        if(customer.getId()!=myAddress.getUser().getId()){
+            throw new NotPermitted("Not your address you can not update this");
+        }
+
+        addressLine = Optional.ofNullable(addressLine).orElse(myAddress.getAddressLine());
+        city = Optional.ofNullable(city).orElse(myAddress.getCity());
+        state = Optional.ofNullable(state).orElse(myAddress.getState());
+        label = Optional.ofNullable(label).orElse(myAddress.getLabel());
+        zipCode = Optional.ofNullable(zipCode).orElse(myAddress.getZipCode());
+        country = Optional.ofNullable(country).orElse(myAddress.getCountry());
+
+        myAddress.setAddressLine(addressLine);
+        myAddress.setCity(city);
+        myAddress.setState(state);
+        myAddress.setLabel(label);
+        myAddress.setZipCode(zipCode);
+        myAddress.setCountry(country);
+
+        addressRepository.save(myAddress);
+
+
+    }
+
+
+
+}

@@ -4,12 +4,10 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.Emails.ForgotPassword;
 import org.example.ecommerce.Entity.ForgetPasswordToken;
 import org.example.ecommerce.Entity.User;
-import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
-import org.example.ecommerce.GlobalExceptions.InvalidJwtToken;
-import org.example.ecommerce.GlobalExceptions.NotPermitted;
-import org.example.ecommerce.GlobalExceptions.UserNotFoundException;
+import org.example.ecommerce.GlobalExceptions.*;
 import org.example.ecommerce.Repository.ForgetPasswordRepository;
 import org.example.ecommerce.Repository.UserRepository;
 import org.example.ecommerce.Tokens.JwtForgot;
@@ -27,6 +25,47 @@ public class ForgotPasswordService {
      UserRepository userRepository;
      BCryptPasswordEncoder passwordEncoder;
      ForgetPasswordRepository forgetPasswordTokenRepo;
+     ForgotPassword forgotPasswordEmail;
+
+    public void processForgotPassword(String email){
+
+        validateEmail(email);
+
+        User user = userRepository.findByEmail(email);
+
+        if(user != null){
+
+            if(user.getIsLocked()){
+                throw new AccountNotActiveException(
+                        "Account is locked. You can not reset password. contact Admin"
+                );
+            }
+
+            if(!user.getIsActive()){
+                throw new AccountNotActiveException(
+                        "Account is not active please contact admin or activate it by activation link"
+                );
+            }
+
+            String token = JwtForgot.generateForgetPasswordToken(email);
+
+            setForgetTokenInDataBase(email, token);
+
+            forgotPasswordEmail.sendForgetPasswordEmail(email, token);
+        }
+    }
+    private void validateEmail(String email){
+
+        if(email == null || email.trim().isEmpty()){
+            throw new InvalidEmail("email is not valid");
+        }
+
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+
+        if(!email.matches(emailRegex)){
+            throw new InvalidEmail("email is not valid");
+        }
+    }
 
     public User getForgetPasswordTokenUser(String email) {
         return userRepository.findByEmail(email);
@@ -71,5 +110,6 @@ public class ForgotPasswordService {
         forgetPasswordTokenRepo.deleteByEmail(email);
         forgetPasswordTokenRepo.flush();
     }
+
 
 }

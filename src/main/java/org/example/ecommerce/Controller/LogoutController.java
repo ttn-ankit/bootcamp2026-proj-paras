@@ -19,7 +19,7 @@ import java.util.Locale;
 @RequestMapping("/api/user")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class Logout {
+public class LogoutController {
      LogoutService logoutService;
      MessageSource messageSource;
 

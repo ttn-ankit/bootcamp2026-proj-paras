@@ -25,33 +25,11 @@ import java.util.Map;
 public class ForgotController {
 
     ForgotPasswordService passwordService;
-    ForgotPassword forgetPasswordEmail;
     MessageSource messageSource;
 
     @PostMapping("/forgot-password")
-    public BasicResponse forgetPassword(@RequestBody Map<String, String> request, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-        String email = request.get("email");
-        if(email == null || email.trim().isEmpty()){
-            throw new InvalidEmail("email is not valid");
-        }
-        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
-        if (!email.matches(emailRegex)) {
-            throw new InvalidEmail("email is not valid");
-        }
-        User user = passwordService.getForgetPasswordTokenUser(email);
-        if(user!=null){
-            if(user.getIsLocked()){
-                throw new AccountNotActiveException("Account is locked. You can not reset password. contact Admin");
-            }
-            if(!user.getIsActive()){
-                throw new AccountNotActiveException("Account is not active please contact admin" +
-                        " or activate it by activation link");
-            }
-            String token = JwtForgot.generateForgetPasswordToken(email);
-            passwordService.setForgetTokenInDataBase(email,token);
-            forgetPasswordEmail.sendForgetPasswordEmail(email,token);
-        }
-
+    public BasicResponse forgetPassword(@RequestParam("email") String email, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
+        passwordService.processForgotPassword(email);
         String response = messageSource.getMessage("message.forgetpassword",null,locale);
         return new BasicResponse(response,true);
     }

@@ -22,6 +22,7 @@ import java.util.Locale;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
 public class AdminController {
+
      CustomerService customerService;
      SellerService sellerService;
 
