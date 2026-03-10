@@ -12,7 +12,6 @@ import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.CustomerProfileViewDto;
-import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
 import org.example.ecommerce.Service.CustomerService;
 import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;

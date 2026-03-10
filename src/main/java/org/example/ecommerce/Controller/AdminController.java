@@ -8,7 +8,6 @@ import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
 import org.example.ecommerce.DTOS.Response.SellerGetAllResponse;
 import org.example.ecommerce.Service.CustomerService;
 import org.example.ecommerce.Service.SellerService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

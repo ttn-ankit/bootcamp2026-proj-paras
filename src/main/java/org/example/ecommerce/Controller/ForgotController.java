@@ -4,18 +4,12 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
-import org.example.ecommerce.Emails.ForgotPassword;
-import org.example.ecommerce.Entity.User;
-import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
-import org.example.ecommerce.GlobalExceptions.InvalidEmail;
 import org.example.ecommerce.Service.ForgotPasswordService;
-import org.example.ecommerce.Tokens.JwtForgot;
 import org.springframework.context.MessageSource;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Locale;
-import java.util.Map;
 
 @Validated
 @RestController
