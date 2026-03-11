@@ -1,24 +1,23 @@
 package org.example.ecommerce.DTOS.Response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.AddressDto;
 
 @Setter
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class SellerProfileViewDto {
 
-    private Long id;
-    private String firstName;
-    private String lastName;
-    private Boolean isActive;
-    private String companyContact;
-    private String companyName;
-    private String gst;
-    private AddressDto address;
-    private String image;
+     Long id;
+     String firstName;
+     String lastName;
+     Boolean isActive;
+     String companyContact;
+     String companyName;
+     String gst;
+     AddressDto address;
+     String image;
 }

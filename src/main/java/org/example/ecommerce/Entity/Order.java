@@ -3,6 +3,7 @@ package org.example.ecommerce.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.Entity.Enum.Label;
 import org.example.ecommerce.Entity.Enum.PaymentMethodEnum;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,13 @@ public class Order {
 
     @Enumerated(EnumType.STRING)
      PaymentMethodEnum paymentMethod;
+
+     String customerAddressCity;
+     String customerAddressState;
+     String customerAddressCountry;
+     String customerAddressAddressLine;
+     Integer customerAddressZipCode;
+     Label customerAddressLabel;
 
     @ManyToOne
     @JoinColumn(name = "customer_id")

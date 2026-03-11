@@ -15,7 +15,7 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AccessToken {
     @Id
-    private String token;
+     String token;
     @Column(nullable = false)
-    private String refreshToken;
+     String refreshToken;
 }

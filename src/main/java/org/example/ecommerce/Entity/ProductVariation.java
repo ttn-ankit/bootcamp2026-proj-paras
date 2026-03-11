@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -28,5 +30,10 @@ public class ProductVariation {
     @JoinColumn(name = "product_id")
      Product product;
 
+    @OneToMany(mappedBy = "productVariation")
+    private List<Cart> cart;
+
+    @OneToMany(mappedBy = "productVariation",cascade = CascadeType.ALL)
+    private List<OrderProduct> orderProduct;
 
 }

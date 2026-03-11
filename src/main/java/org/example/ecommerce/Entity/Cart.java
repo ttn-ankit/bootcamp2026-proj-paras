@@ -24,8 +24,8 @@ public class Cart {
     @MapsId("customerId")
      Customer customer;
 
-    @OneToMany
+    @ManyToOne
     @MapsId("productVariationId")
-     List<ProductVariation> productVariation;
+     ProductVariation productVariation;
 
 }
