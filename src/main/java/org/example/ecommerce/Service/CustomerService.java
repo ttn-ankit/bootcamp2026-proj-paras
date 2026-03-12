@@ -10,8 +10,7 @@ import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
 import org.example.ecommerce.DTOS.Response.CustomerProfileViewDto;
-import org.example.ecommerce.Emails.AccountActivated;
-import org.example.ecommerce.Emails.CustomerRegistration;
+import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.*;
 import org.example.ecommerce.GlobalExceptions.*;
 import org.example.ecommerce.Repository.*;
@@ -42,10 +41,10 @@ public class CustomerService {
 
     UserRepository userRepository;
      BCryptPasswordEncoder bCryptPasswordEncoder;
-     CustomerRegistration customerRegistration;
+     EmailService customerRegistration;
      ActivationTokenRepository activationTokenRepo;
    CustomerRepository customerRepository;
-     AccountActivated accountActivatedEmail;
+     EmailService accountActivatedEmail;
    RoleRepository roleRepository;
      AddressRepository addressRepository;
      MessageSource messageSource;
@@ -102,7 +101,7 @@ public class CustomerService {
         String email = customer.getEmail();
         String token  = JwtLogin.generateLoginAccessToken(email);
         activationTokenRepo.save(new UserActivationToken(email,token));
-        customerRegistration.sendVerificationEmail(email,token);
+        customerRegistration.sendEmail(token,email,"Verification Token");
         Customer success =  userRepository.save(customer);
         if(success==null){
             return "could not Register Customer";
@@ -122,14 +121,14 @@ public class CustomerService {
             if(userActivationToken==null){
                 token  = JwtLogin.generateLoginAccessToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
-                customerRegistration.sendVerificationEmail(email,token);
+                customerRegistration.sendEmail(token,email,"Verification Token");
                 String response = messageSource.getMessage("message.account.activated.null.resend",null,locale);
                 return new BasicResponse(response,true);
             }
             if(!userActivationToken.getToken().equals(token)){
                 token  = JwtLogin.generateLoginAccessToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
-                customerRegistration.sendVerificationEmail(email,token);
+                customerRegistration.sendEmail(token,email,"Verification Token");
 
                 String response = messageSource.getMessage("message.account.activated.resend",null,locale);
                 return new BasicResponse(response,true);
@@ -159,7 +158,7 @@ public class CustomerService {
         if(role.equals("CUSTOMER")){
             String token  = JwtLogin.generateLoginAccessToken(email);
             activationTokenRepo.save(new UserActivationToken(email,token));
-            customerRegistration.sendVerificationEmail(email,token);
+            customerRegistration.sendEmail(token,email,"Verification Token");
 
             String response = messageSource.getMessage("message.account.activated.link.send",null,locale);
             return new BasicResponse(response,true);
@@ -185,7 +184,7 @@ public class CustomerService {
         String email = customer.getEmail();
         customerRepository.save(customer);
 
-        accountActivatedEmail.sendAccountActivatedEmail("your Account activated please check", email);
+        accountActivatedEmail.sendEmail("your Account activated please check", email,"Activation Mail");
         String response = messageSource.getMessage("message.accountactivated",null,locale);
         return new BasicResponse(response,true);
 
@@ -206,7 +205,7 @@ public class CustomerService {
         String email = customer.getEmail();
         customerRepository.save(customer);
 
-        accountActivatedEmail.sendAccountActivatedEmail("your Account has been de-activated please check",email);
+        accountActivatedEmail.sendEmail("your Account has been de-activated please check",email,"Deactivation Email");
 
         String response = messageSource.getMessage("message.accountdeactivated",null,locale);
         return new BasicResponse(response,true);
@@ -223,7 +222,7 @@ public class CustomerService {
         customer.setPassword(bCryptPasswordEncoder.encode(password));
         customer.setPasswordUpdateDate(LocalDateTime.now());
         customerRepository.save(customer);
-        accountActivatedEmail.sendAccountPasswordChangedEmail("your password has been changed", email);
+        accountActivatedEmail.sendEmail("your password has been changed", email, "Account Password Changed");
 
     }
 

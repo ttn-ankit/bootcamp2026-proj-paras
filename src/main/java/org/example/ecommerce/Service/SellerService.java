@@ -9,8 +9,7 @@ import org.example.ecommerce.DTOS.Response.AddressResponse;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.SellerGetAllResponse;
 import org.example.ecommerce.DTOS.Response.SellerProfileViewDto;
-import org.example.ecommerce.Emails.AccountActivated;
-import org.example.ecommerce.Emails.SellerRegistration;
+import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.Address;
 import org.example.ecommerce.Entity.Role;
 import org.example.ecommerce.Entity.Seller;
@@ -37,7 +36,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -45,9 +43,9 @@ import java.util.stream.Collectors;
 public class SellerService {
      UserRepository userRepository;
     BCryptPasswordEncoder bCryptPasswordEncoder;
-     SellerRegistration sellerRegistrationEmail;
+     EmailService sellerRegistrationEmail;
      SellerRepository sellerRepository;
-     AccountActivated accountActivatedEmail;
+     EmailService accountActivatedEmail;
     RoleRepository roleRepository;
     MessageSource messageSource;
 
@@ -94,8 +92,7 @@ public class SellerService {
         seller.setRoles(roles);
         seller.setPassword(bCryptPasswordEncoder.encode(seller.getPassword()));
         String email = seller.getEmail();
-//        String token  = JwtRegistrationToken.generateRegistrationToken(email);
-        sellerRegistrationEmail.sendRegistrationStatusEmail(email);
+        sellerRegistrationEmail.sendEmail("Application Submitted",email,"Verification Token");
         Seller success =  userRepository.save(seller);
         if(success==null){
             return "could not Register Seller";
@@ -118,7 +115,7 @@ public class SellerService {
         String email = seller.getEmail();
         sellerRepository.save(seller);
 
-        accountActivatedEmail.sendAccountActivatedEmail("your Account activated please check", email);
+        accountActivatedEmail.sendEmail("your Account activated please check", email, "Account Activated");
 
         String response = messageSource.getMessage("message.accountactivated",null,locale);
         return new BasicResponse(response,true);
@@ -138,7 +135,7 @@ public class SellerService {
         String email = seller.getEmail();
         sellerRepository.save(seller);
 
-        accountActivatedEmail.sendAccountActivatedEmail("your Account has been de-activated please check", email);
+        accountActivatedEmail.sendEmail("your Account has been de-activated please check", email, "Account Activated");
 
         String response = messageSource.getMessage("message.accountdeactivated",null,locale);
         return new BasicResponse(response,true);
@@ -152,7 +149,7 @@ public class SellerService {
         seller.setPassword(bCryptPasswordEncoder.encode(password));
         seller.setPasswordUpdateDate(LocalDateTime.now());
         sellerRepository.save(seller);
-        accountActivatedEmail.sendAccountPasswordChangedEmail("your password has been changed",email);
+        accountActivatedEmail.sendEmail("your password has been changed",email, "Account Password Changed");
     }
 
     @Transactional
@@ -192,7 +189,7 @@ public class SellerService {
 
                     return response;
                 })
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
 
         return sellers;

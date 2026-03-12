@@ -55,7 +55,7 @@ public class SellerController {
     }
 
     @PreAuthorize("hasRole('SELLER')")
-    @PatchMapping("/update/seller-address/{id}")
+    @PatchMapping("/update/address/{id}")
     public BasicResponse updateAddress(
             @PathVariable(value = "id") Long id,
             @RequestParam(value = "city", required = false)
@@ -71,7 +71,7 @@ public class SellerController {
             String addressLine,
 
             @RequestParam(value = "label", required = false)
-            @Pattern(regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$", message = "Label must only contain letters and single spaces between words.")
+            @Pattern(regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$", message = "AddressType must only contain letters and single spaces between words.")
             String label,
 
             @RequestParam(value = "country", required = false)
@@ -96,7 +96,7 @@ public class SellerController {
 
 
     @PreAuthorize("hasRole('SELLER')")
-    @PatchMapping("/update-seller-profile")
+    @PatchMapping("/update-profile")
     public BasicResponse updateMyProfile(
             @RequestParam(value = "firstName", required = false)
             @Pattern(regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$", message = "First name should only contain alphabets and spaces, no leading/trailing spaces.")

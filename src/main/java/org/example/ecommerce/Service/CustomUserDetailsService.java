@@ -4,13 +4,11 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.example.ecommerce.Emails.AccountLocked;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
 import org.example.ecommerce.GlobalExceptions.InvalidEmail;
 import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
 import org.example.ecommerce.Repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -23,7 +21,6 @@ import java.time.LocalDateTime;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CustomUserDetailsService implements UserDetailsService {
      UserRepository userRepository;
-     AccountLocked accountLocked;
 
     @Override
     @Transactional

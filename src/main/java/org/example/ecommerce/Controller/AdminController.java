@@ -51,33 +51,26 @@ public class AdminController {
         return sellerService.DeActivateSellerById(id,locale);
 
     }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/customers")
     public List<CustomerGetAllResponse> getAllCustomers(
-            @RequestParam(value = "pageSize",required = false) Integer pageSize,
-            @RequestParam(value = "pageOffset",required = false) Integer pageOffset,
-            @RequestParam(value = "sort",required = false) String sort,
-            @RequestParam(value = "email",required = false) String email
+            @RequestParam(value = "pageSize",defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "pageOffset",defaultValue = "0") Integer pageOffset,
+            @RequestParam(value = "sort",defaultValue = "id") String sort,
+            @RequestParam(value = "email",defaultValue = "%") String email
     ){
-        if (pageSize==null) pageSize=10;
-        if(pageOffset==null) pageOffset=0;
-        if (sort==null) sort="id";
-        if(email==null) email="%";
         return customerService.getAllCustomer(pageSize,pageOffset,sort,email);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/sellers")
     public List<SellerGetAllResponse> getAllSellers(
-            @RequestParam(value = "pageSize",required = false) Integer pageSize,
-            @RequestParam(value = "pageOffset",required = false) Integer pageOffset,
-            @RequestParam(value = "sort",required = false) String sort,
-            @RequestParam(value = "email",required = false) String email
+            @RequestParam(value = "pageSize",defaultValue = "10") Integer pageSize,
+            @RequestParam(value = "pageOffset",defaultValue = "0") Integer pageOffset,
+            @RequestParam(value = "sort",defaultValue = "id") String sort,
+            @RequestParam(value = "email",defaultValue = "%") String email
     ){
-        if (pageSize==null) pageSize=10;
-        if(pageOffset==null) pageOffset=0;
-        if (sort==null) sort="id";
-        if(email==null) email="%";
         return sellerService.getAllSeller(pageSize,pageOffset,sort,email);
     }
 }

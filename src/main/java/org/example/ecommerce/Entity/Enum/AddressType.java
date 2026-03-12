@@ -1,5 +1,5 @@
 package org.example.ecommerce.Entity.Enum;
 
-public enum Label {
+public enum AddressType {
     HOME,OFFICE
 }

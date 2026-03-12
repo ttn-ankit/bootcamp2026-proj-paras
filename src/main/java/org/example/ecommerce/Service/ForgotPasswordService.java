@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.example.ecommerce.Emails.ForgotPassword;
+import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.ForgetPasswordToken;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.*;
@@ -25,7 +25,7 @@ public class ForgotPasswordService {
      UserRepository userRepository;
      BCryptPasswordEncoder passwordEncoder;
      ForgetPasswordRepository forgetPasswordTokenRepo;
-     ForgotPassword forgotPasswordEmail;
+     EmailService forgotPasswordEmail;
 
     public void processForgotPassword(String email){
 
@@ -51,7 +51,7 @@ public class ForgotPasswordService {
 
             setForgetTokenInDataBase(email, token);
 
-            forgotPasswordEmail.sendForgetPasswordEmail(email, token);
+            forgotPasswordEmail.sendEmail(token,email,"Reset Token");
         }
     }
     private void validateEmail(String email){

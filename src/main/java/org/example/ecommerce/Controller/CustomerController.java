@@ -140,7 +140,7 @@ public class CustomerController {
             String addressLine,
 
             @RequestParam(value = "label", required = false)
-            @Pattern(regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$", message = "Label must only contain letters and single spaces between words.")
+            @Pattern(regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$", message = "AddressType must only contain letters and single spaces between words.")
             String label,
 
             @RequestParam(value = "country", required = false)

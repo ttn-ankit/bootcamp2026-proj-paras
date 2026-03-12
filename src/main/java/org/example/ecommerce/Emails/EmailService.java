@@ -11,18 +11,16 @@ import org.springframework.stereotype.Service;
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public class AccountLocked {
-    JavaMailSender mailSender;
+public class EmailService {
+    JavaMailSender javaMailSender;
 
     @Async
-    public void sendAccountLockedEmail(String toEmail){
-
-        String resetPasswordLink = "http://localhost:8080/api/user/forget-password";
+    public void sendEmail(String content, String toEmail, String subject){
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(toEmail);
-        message.setSubject("Account Locked");
-        message.setText("Your Account has been Locked. Please visit "+resetPasswordLink);
-        mailSender.send(message);
+        message.setSubject(subject);
+        message.setText(content);
+        javaMailSender.send(message);
 
     }
 }
