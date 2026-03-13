@@ -14,11 +14,12 @@ import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.*;
 import org.example.ecommerce.GlobalExceptions.*;
 import org.example.ecommerce.Repository.*;
-import org.example.ecommerce.Tokens.JwtLogin;
+import org.example.ecommerce.Security.JWTService;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +49,7 @@ public class CustomerService {
    RoleRepository roleRepository;
      AddressRepository addressRepository;
      MessageSource messageSource;
+     JWTService jwtService;
 
     public String registerCustomer(CustomerDto dto) {
         Customer customer = new Customer();
@@ -88,7 +90,7 @@ public class CustomerService {
         }
 
         if(userRepository.existsByEmail(customer.getEmail())){
-            throw new DuplicateEmailException("Email Already Found");
+            throw new APIException("Email Already Found", HttpStatus.BAD_REQUEST);
         }
         Role customerRole = new Role();
         customerRole.setAuthority("CUSTOMER");
@@ -99,18 +101,15 @@ public class CustomerService {
         customer.setLastName(dto.getLastName());
         customer.setPassword(bCryptPasswordEncoder.encode(customer.getPassword()));
         String email = customer.getEmail();
-        String token  = JwtLogin.generateLoginAccessToken(email);
+        String token  = jwtService.generateAccessToken(email);
         activationTokenRepo.save(new UserActivationToken(email,token));
         customerRegistration.sendEmail(token,email,"Verification Token");
-        Customer success =  userRepository.save(customer);
-        if(success==null){
-            return "could not Register Customer";
-        }
+        userRepository.save(customer);
         return "New Customer Registered Successfully";
     }
 
     public BasicResponse activateCustomer(String token, Locale locale) {
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         User customer = userRepository.findByEmail(email);
         UserActivationToken userActivationToken = activationTokenRepo.findByEmail(email);
         if(customer!=null){
@@ -119,14 +118,14 @@ public class CustomerService {
                 return new BasicResponse(response,true);
             }
             if(userActivationToken==null){
-                token  = JwtLogin.generateLoginAccessToken(email);
+                token  = jwtService.generateAccessToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
                 customerRegistration.sendEmail(token,email,"Verification Token");
                 String response = messageSource.getMessage("message.account.activated.null.resend",null,locale);
                 return new BasicResponse(response,true);
             }
             if(!userActivationToken.getToken().equals(token)){
-                token  = JwtLogin.generateLoginAccessToken(email);
+                token  = jwtService.generateAccessToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
                 customerRegistration.sendEmail(token,email,"Verification Token");
 
@@ -147,7 +146,7 @@ public class CustomerService {
     public BasicResponse reSendActivationLink(String email,Locale locale) {
         User customer = userRepository.findByEmail(email);
         if(customer==null){
-            throw new InvalidEmail("User With "+ email +" is not found");
+            throw new APIException("User With "+ email +" is not found", HttpStatus.BAD_REQUEST);
         }
         if(customer.getIsActive()){
 
@@ -156,7 +155,7 @@ public class CustomerService {
         }
         String role = customer.getRoles().get(0).getAuthority();
         if(role.equals("CUSTOMER")){
-            String token  = JwtLogin.generateLoginAccessToken(email);
+            String token  = jwtService.generateAccessToken(email);
             activationTokenRepo.save(new UserActivationToken(email,token));
             customerRegistration.sendEmail(token,email,"Verification Token");
 
@@ -171,7 +170,7 @@ public class CustomerService {
     @Transactional
     public BasicResponse activateCustomerById(Long id, Locale locale) {
         Optional<Customer> cust = Optional.of(customerRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("User with id is not found")
+                ()-> new APIException("User with id is not found",HttpStatus.BAD_REQUEST)
         ));
         Customer customer = cust.get();
 
@@ -193,7 +192,7 @@ public class CustomerService {
     public BasicResponse deActivateCustomerById(Long id,Locale locale) {
 
         Optional<Customer> cust = Optional.of(customerRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("User with id is not found")
+                ()-> new APIException("User with id is not found",HttpStatus.BAD_REQUEST)
         ));
         Customer customer = cust.get();
 
@@ -215,9 +214,9 @@ public class CustomerService {
     public void updateProfilePassword(String token, String password, String confirmPassword) {
 
         if(!password.equals(confirmPassword)){
-            throw new PasswordDoesNotMatchException("Passwords do not match.");
+            throw new APIException("Passwords do not match.", HttpStatus.BAD_REQUEST);
         }
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
         customer.setPassword(bCryptPasswordEncoder.encode(password));
         customer.setPasswordUpdateDate(LocalDateTime.now());
@@ -228,7 +227,7 @@ public class CustomerService {
 
     public void addNewCustomerAddress(String token, AddressResponse address) {
 
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
         List<Address> addresses = customer.getAddresses();
         Address address1 = new Address();
@@ -248,21 +247,18 @@ public class CustomerService {
 
     public void deletedThisAddress(Long id, String token) {
 
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
 
         Address myAddress = addressRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("Address with this id is not found ")
+                ()-> new APIException("Address with this id is not found ",HttpStatus.BAD_REQUEST)
         );
 
 
         if(customer.getId()!=myAddress.getUser().getId()){
-            throw new NotPermitted("Not your address you can not delete this");
+            throw new APIException("Not your address you can not delete this",HttpStatus.BAD_REQUEST);
         }
-
         addressRepository.delete(myAddress);
-
-
     }
 
     public List<CustomerGetAllResponse> getAllCustomer(Integer pageSize, Integer pageOffset, String sort, String email) {
@@ -283,14 +279,14 @@ public class CustomerService {
                     response.setIsActive(customer.getIsActive());
                     response.setEmail(customer.getEmail());
                     return response;
-                }).collect(Collectors.toUnmodifiableList());
+                }).toList();
 
         return customers;
     }
 
 
     public CustomerProfileViewDto getMyProfile(String token) {
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
         CustomerProfileViewDto customerProfile = new CustomerProfileViewDto();
         customerProfile.setId(customer.getId());
@@ -306,7 +302,7 @@ public class CustomerService {
 
     public List<AddressResponse> getAllCustomerAddress(String token) {
 
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
         List<AddressResponse> customerAddresses = new ArrayList<>();
         try {
@@ -336,7 +332,7 @@ public class CustomerService {
     public String updateCustomerProfileFields(String token, String firstName, String lastName, String middleName, String contact, MultipartFile image) {
 
 
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
 
         if(firstName!=null) customer.setFirstName(firstName);
@@ -361,14 +357,13 @@ public class CustomerService {
             Path uploadPath = Paths.get(uploadFolder).toAbsolutePath();
             try {
                 Files.createDirectories(uploadPath);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
 
             }
             Path imagePath = uploadPath.resolve(customer.getId() + extension);
             try {
                 image.transferTo(imagePath.toFile());
-            } catch (IOException e) {
-
+            } catch (IOException ignored) {
             }
         }
 
@@ -380,16 +375,16 @@ public class CustomerService {
 
     public void updateAddress(Long id, String city, String state, String addressLine, String label, String country, Integer zipCode, String token) {
 
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
 
         Address myAddress = addressRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("Address with this id is not found ")
+                ()-> new APIException("Address with this id is not found ", HttpStatus.BAD_REQUEST)
         );
 
 
         if(customer.getId()!=myAddress.getUser().getId()){
-            throw new NotPermitted("Not your address you can not update this");
+            throw new APIException("Not your address you can not update this",HttpStatus.BAD_REQUEST);
         }
 
         addressLine = Optional.ofNullable(addressLine).orElse(myAddress.getAddressLine());

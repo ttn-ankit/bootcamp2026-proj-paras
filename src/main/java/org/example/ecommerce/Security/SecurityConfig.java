@@ -23,10 +23,6 @@ public class SecurityConfig {
     private CustomAuthenticationProvider authenticationProvider;
     @Autowired
     private CustomJWTAuthenticationAuthorization jwtAuthenticationAuthorization;
-    @Autowired
-    private CustomAccessDeniedHandler customAccessDeniedHandler;
-    @Autowired
-    private CustomAuthEntryPoint customAuthEntryPoint;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -36,7 +32,6 @@ public class SecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable);
         http.authorizeHttpRequests(auth
                         -> auth
-                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers("/api/user/**",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
@@ -44,10 +39,7 @@ public class SecurityConfig {
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider)
-                .addFilterBefore(jwtAuthenticationAuthorization, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exception ->
-                        exception.authenticationEntryPoint(customAuthEntryPoint)
-                .accessDeniedHandler((customAccessDeniedHandler)));
+                .addFilterBefore(jwtAuthenticationAuthorization, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

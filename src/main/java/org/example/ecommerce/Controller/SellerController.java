@@ -11,9 +11,10 @@ import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.SellerProfileViewDto;
-import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
+import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Service.SellerService;
 import org.springframework.context.MessageSource;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class SellerController {
                                         @RequestHeader(name = "Accept-Language", required = false) Locale locale){
 
         if(!resetPasswordDTO.getPassword().equals(resetPasswordDTO.getConfirmPassword())){
-            throw new PasswordDoesNotMatchException("password and confirm password should match");
+            throw new APIException("password and confirm password should match", HttpStatus.BAD_REQUEST);
         }
         String token = request.getHeader("Authorization").substring(7);
         sellerService.updateMyPassword(token  , resetPasswordDTO.getPassword());

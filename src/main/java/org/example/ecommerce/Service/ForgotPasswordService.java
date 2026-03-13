@@ -10,8 +10,8 @@ import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.*;
 import org.example.ecommerce.Repository.ForgetPasswordRepository;
 import org.example.ecommerce.Repository.UserRepository;
-import org.example.ecommerce.Tokens.JwtForgot;
-import org.example.ecommerce.Tokens.JwtLogin;
+import org.example.ecommerce.Security.JWTService;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +26,7 @@ public class ForgotPasswordService {
      BCryptPasswordEncoder passwordEncoder;
      ForgetPasswordRepository forgetPasswordTokenRepo;
      EmailService forgotPasswordEmail;
+     JWTService jwtService;
 
     public void processForgotPassword(String email){
 
@@ -36,18 +37,18 @@ public class ForgotPasswordService {
         if(user != null){
 
             if(user.getIsLocked()){
-                throw new AccountNotActiveException(
-                        "Account is locked. You can not reset password. contact Admin"
+                throw new APIException(
+                        "Account is locked. You can not reset password. contact Admin",HttpStatus.BAD_REQUEST
                 );
             }
 
             if(!user.getIsActive()){
-                throw new AccountNotActiveException(
-                        "Account is not active please contact admin or activate it by activation link"
+                throw new APIException(
+                        "Account is not active please contact admin or activate it by activation link",HttpStatus.BAD_REQUEST
                 );
             }
 
-            String token = JwtForgot.generateForgetPasswordToken(email);
+            String token = jwtService.generatePasswordResetToken(email);
 
             setForgetTokenInDataBase(email, token);
 
@@ -57,13 +58,13 @@ public class ForgotPasswordService {
     private void validateEmail(String email){
 
         if(email == null || email.trim().isEmpty()){
-            throw new InvalidEmail("email is not valid");
+            throw new APIException("email is not valid",HttpStatus.BAD_REQUEST);
         }
 
         String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
 
         if(!email.matches(emailRegex)){
-            throw new InvalidEmail("email is not valid");
+            throw new APIException("email is not valid",HttpStatus.BAD_REQUEST);
         }
     }
 
@@ -73,24 +74,23 @@ public class ForgotPasswordService {
     }
     @Transactional
     public void setPassword(String token, String password) {
-        String claim = JwtForgot.validateForgetPasswordToken(token);
-        if(!claim.equals("password-reset")){
-            throw new InvalidJwtToken("Invalid forget Password Token, request another");
+        String email = jwtService.extractUsername(token);
+        if(!jwtService.validateToken(token,email)){
+            throw new APIException("Token Expired", HttpStatus.UNAUTHORIZED);
         }
-        String email = JwtLogin.validateLoginAccessToken(token);
         ForgetPasswordToken forgetToken = forgetPasswordTokenRepo.findByEmail(email);
         if(!token.equals(forgetToken.getForgetToken())){
-            throw new InvalidJwtToken("The Request Token is Changed. Please use latest One.");
+            throw new APIException("The Request Token is Changed. Please use latest One.", HttpStatus.BAD_REQUEST);
         }
         User user = userRepository.findByEmail(email);
         if(user==null){
-            throw new UserNotFoundException("User Not Found with email: "+email);
+            throw new APIException("User Not Found with email: "+email, HttpStatus.BAD_REQUEST);
         }
         if(!user.getIsActive()){
-            throw new AccountNotActiveException("Activate you account first");
+            throw new APIException("Activate you account first",HttpStatus.BAD_REQUEST);
         }
         if(user.getIsLocked()){
-            throw new NotPermitted("Your Account is locked. Contact admin to unlock your account");
+            throw new APIException("Your Account is locked. Contact admin to unlock your account", HttpStatus.BAD_REQUEST);
         }
         String userPassword = passwordEncoder.encode(password);
         user.setPassword(userPassword);
@@ -106,7 +106,7 @@ public class ForgotPasswordService {
     }
 
     public void removeToken(String token) {
-        String email = JwtForgot.returnEmailFromToken(token);
+        String email = jwtService.extractUsername(token);
         forgetPasswordTokenRepo.deleteByEmail(email);
         forgetPasswordTokenRepo.flush();
     }

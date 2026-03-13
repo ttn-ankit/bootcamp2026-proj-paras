@@ -13,18 +13,17 @@ import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.Address;
 import org.example.ecommerce.Entity.Role;
 import org.example.ecommerce.Entity.Seller;
-import org.example.ecommerce.GlobalExceptions.DuplicateEmailException;
-import org.example.ecommerce.GlobalExceptions.NotPermitted;
-import org.example.ecommerce.GlobalExceptions.UserNotFoundException;
+import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Repository.AddressRepository;
 import org.example.ecommerce.Repository.RoleRepository;
 import org.example.ecommerce.Repository.SellerRepository;
 import org.example.ecommerce.Repository.UserRepository;
-import org.example.ecommerce.Tokens.JwtLogin;
+import org.example.ecommerce.Security.JWTService;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -48,6 +47,7 @@ public class SellerService {
      EmailService accountActivatedEmail;
     RoleRepository roleRepository;
     MessageSource messageSource;
+    JWTService jwtService;
 
    AddressRepository addressRepository;
 
@@ -82,7 +82,7 @@ public class SellerService {
         seller.setAddresses(Arrays.asList(sellerAddress));
 
         if(userRepository.existsByEmail(seller.getEmail())){
-            throw new DuplicateEmailException("Email Already Found");
+            throw new APIException("Email Already Found", HttpStatus.BAD_REQUEST);
         }
         List<Role> roles = new ArrayList<>();
         Role sellerRole = new Role();
@@ -94,16 +94,13 @@ public class SellerService {
         String email = seller.getEmail();
         sellerRegistrationEmail.sendEmail("Application Submitted",email,"Verification Token");
         Seller success =  userRepository.save(seller);
-        if(success==null){
-            return "could not Register Seller";
-        }
         return "New Seller Registered Successfully Awaits Approval check email for more details";
     }
 
 
     public BasicResponse activateSellerById(Long id, Locale locale) {
         Optional<Seller> sell = Optional.of(sellerRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("User with id is not found")
+                ()-> new APIException("User with id is not found",HttpStatus.BAD_REQUEST)
         ));
         Seller seller = sell.get();
 
@@ -123,7 +120,7 @@ public class SellerService {
 
     public BasicResponse DeActivateSellerById(Long id,Locale locale) {
         Optional<Seller> sell = Optional.of(sellerRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("User with id is not found")
+                ()-> new APIException("User with id is not found",HttpStatus.BAD_REQUEST)
         ));
         Seller seller = sell.get();
 
@@ -144,7 +141,7 @@ public class SellerService {
 
 
     public void updateMyPassword(String token,String password) {
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Seller seller = sellerRepository.findByEmail(email);
         seller.setPassword(bCryptPasswordEncoder.encode(password));
         seller.setPasswordUpdateDate(LocalDateTime.now());
@@ -200,7 +197,7 @@ public class SellerService {
 
     public SellerProfileViewDto getMyProfile(String token) {
 
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         SellerProfileViewDto sellerProfileViewByHimselfDTO = new SellerProfileViewDto();
         Seller seller = sellerRepository.findByEmail(email);
         sellerProfileViewByHimselfDTO.setId(seller.getId());
@@ -230,16 +227,16 @@ public class SellerService {
     }
 
     public String updateSellerAddress( Long id, String city, String state, String addressLine, String label, String country, Integer zipCode, String token) {
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Seller seller = sellerRepository.findByEmail(email);
 
         Address myAddress = addressRepository.findById(id).orElseThrow(
-                ()-> new UserNotFoundException("Address with this id is not found ")
+                ()-> new APIException("Address with id is not found",HttpStatus.BAD_REQUEST)
         );
 
 
         if(seller.getId()!=myAddress.getUser().getId()){
-            throw new NotPermitted("Not your address you can not update this");
+            throw new APIException("Not your address you can not update this",HttpStatus.BAD_REQUEST);
         }
 
         addressLine = Optional.ofNullable(addressLine).orElse(myAddress.getAddressLine());
@@ -263,9 +260,9 @@ public class SellerService {
     }
 
     public void updateMyProfile(String token, String firstName, String lastName, String middleName, String gst, String companyName, String contact, MultipartFile image) {
-        String email = JwtLogin.validateLoginAccessToken(token);
+        String email = jwtService.extractUsername(token);
         Seller seller = Optional.ofNullable(sellerRepository.findByEmail(email)).orElseThrow(
-                ()-> new UserNotFoundException("User with the email not found")
+                ()-> new APIException("User with email is not found",HttpStatus.BAD_REQUEST)
         );
 
         seller.setGst(Optional.ofNullable(gst).orElse(seller.getGst()));

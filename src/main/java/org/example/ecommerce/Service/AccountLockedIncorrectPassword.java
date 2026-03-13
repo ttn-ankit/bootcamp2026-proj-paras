@@ -3,10 +3,16 @@ package org.example.ecommerce.Service;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.Emails.AccountLocked;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.User;
-import org.example.ecommerce.GlobalExceptions.InvalidEmail;
+import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -26,7 +32,7 @@ public class AccountLockedIncorrectPassword {
             user.setIsLocked(true);
             accountLocked.sendEmail("Your Account has been Locked.", email," Account Locked");
             userRepository.save(user);
-            throw new InvalidEmail("Account is locked due to max number of attempts");
+            throw new APIException("Account is locked due to max number of attempts", HttpStatus.UNAUTHORIZED);
 
         }
         else{

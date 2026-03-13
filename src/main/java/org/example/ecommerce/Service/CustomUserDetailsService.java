@@ -5,10 +5,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Entity.User;
-import org.example.ecommerce.GlobalExceptions.AccountNotActiveException;
-import org.example.ecommerce.GlobalExceptions.InvalidEmail;
-import org.example.ecommerce.GlobalExceptions.PasswordDoesNotMatchException;
+import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,29 +26,29 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException{
         User user = userRepository.findByEmail(email);
         if (user==null){
-            throw new InvalidEmail("Incorrect Email. give correct email address associated with account");
+            throw new APIException("Incorrect Email. give correct email address associated with account", HttpStatus.BAD_REQUEST);
         }
         String roleOfUser = user.getRoles().get(0).getAuthority();
         if(roleOfUser.equals("CUSTOMER") ||  roleOfUser.equals("SELLER")){
             if(user.getIsExpired()){
-                throw new AccountNotActiveException("Your Password is expired please reset is using forget password");
+                throw new APIException("Your Password is expired please reset is using forget password",HttpStatus.BAD_REQUEST);
             }
             LocalDateTime lastPasswordUpdateDate = user.getPasswordUpdateDate();
             if(lastPasswordUpdateDate.plusDays(30).isBefore(LocalDateTime.now())){
-                throw new PasswordDoesNotMatchException("Password is older more than 30 days please update it first");
+                throw new APIException("Password is older more than 30 days please update it first",HttpStatus.BAD_REQUEST);
             }
         }
         if(user.getIsLocked()){
 
-            throw new InvalidEmail("Account is Locked Due to Maximum number of attempts.");
+            throw new APIException("Account is Locked Due to Maximum number of attempts.",HttpStatus.BAD_REQUEST);
         }
         if(!user.getIsActive()){
             if(roleOfUser.equals("CUSTOMER")){
-                throw new AccountNotActiveException("Account is not active Please request " +
-                        "new Activation token and get your activated");
+                throw new APIException("Account is not active Please request " +
+                        "new Activation token and get your activated",HttpStatus.BAD_REQUEST);
             }
             else{
-                throw new AccountNotActiveException("Account is not active yet Admin will review it soon");
+                throw new APIException("Account is not active yet Admin will review it soon",HttpStatus.BAD_REQUEST);
             }
         }
         return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
