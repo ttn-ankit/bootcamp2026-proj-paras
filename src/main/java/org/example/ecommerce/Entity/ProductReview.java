@@ -22,20 +22,22 @@ import java.time.LocalDateTime;
 )
 public class ProductReview {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-     Long id;
+    @EmbeddedId
+    private ProductReviewKey id;
 
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
+    @ManyToOne
+    @MapsId("customerId")
+    @JoinColumn(name = "customer_id")
      Customer customer;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "product_id", nullable = false)
+
+    @ManyToOne
+    @MapsId("productId")
+    @JoinColumn(name = "product_id")
      Product product;
 
     @Column(nullable = false)
-    private Integer rating; // 1–5
+    private Integer rating;
 
     @Column(columnDefinition = "TEXT")
     private String review;

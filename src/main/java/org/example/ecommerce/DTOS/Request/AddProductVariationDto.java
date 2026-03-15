@@ -27,7 +27,7 @@ public class AddProductVariationDto {
      Map<String,String> metadata;
     @NotNull(message = "give product price")
     @Min(value = 1, message = "Price must be greater than 0")
-     Long price;
+     Double price;
     @NotNull(message = "give primary image of the product")
      MultipartFile primaryImage;
 

@@ -3,8 +3,11 @@ package org.example.ecommerce.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.util.List;
+import java.util.Map;
 
 @Entity
 @Getter
@@ -20,8 +23,9 @@ public class ProductVariation {
      Integer quantityAvailable;
      Double price;
 
-    @Column(columnDefinition = "TEXT")
-     String metadata;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "json")
+    private Map<String,String> metadata;
 
      String primaryImageName;
      Boolean isActive;

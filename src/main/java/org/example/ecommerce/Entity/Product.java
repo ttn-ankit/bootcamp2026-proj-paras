@@ -23,6 +23,7 @@ public class Product {
      String brand;
      Boolean isCancellable;
      Boolean isReturnable;
+     Boolean isRefundable;
      Boolean isActive;
      Boolean isDeleted;
 
