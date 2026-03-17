@@ -15,17 +15,10 @@ public class AccessTokenService {
 
     public boolean findToken(String token){
         AccessToken databaseToken = tokenRepo.findByToken(token);
-        if(databaseToken==null) return false;
-        return true;
+        return databaseToken != null;
+    }
+    public void saveToken(String token,String refreshToken,String email){
+        tokenRepo.save(new AccessToken(token,refreshToken,email));
     }
 
-
-    public void saveToken(String token,String refreshToken){
-        tokenRepo.save(new AccessToken(token,refreshToken));
-    }
-
-    public void deleteToken(String token){
-        AccessToken tokenToDelete = tokenRepo.findByToken(token);
-        tokenRepo.deleteById(tokenToDelete.getToken());
-    }
 }

@@ -18,4 +18,6 @@ public class AccessToken {
      String token;
     @Column(nullable = false)
      String refreshToken;
+    @Column(nullable = false)
+     String email;
 }

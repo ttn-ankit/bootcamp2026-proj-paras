@@ -101,7 +101,7 @@ public class CustomerService {
         customer.setLastName(dto.getLastName());
         customer.setPassword(bCryptPasswordEncoder.encode(customer.getPassword()));
         String email = customer.getEmail();
-        String token  = jwtService.generateAccessToken(email);
+        String token  = jwtService.generateActivationToken(email);
         activationTokenRepo.save(new UserActivationToken(email,token));
         customerRegistration.sendEmail(token,email,"Verification Token");
         userRepository.save(customer);
@@ -119,14 +119,14 @@ public class CustomerService {
                 return new BasicResponse(response,200);
             }
             if(userActivationToken==null){
-                token  = jwtService.generateAccessToken(email);
+                token  = jwtService.generateActivationToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
                 customerRegistration.sendEmail(token,email,"Verification Token");
                 String response = messageSource.getMessage("message.account.activated.null.resend",null,locale);
                 return new BasicResponse(response,200);
             }
             if(!userActivationToken.getToken().equals(token)){
-                token  = jwtService.generateAccessToken(email);
+                token  = jwtService.generateActivationToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
                 customerRegistration.sendEmail(token,email,"Verification Token");
 
@@ -156,7 +156,7 @@ public class CustomerService {
         }
         RoleAuthority role = customer.getRoles().get(0).getAuthority();
         if(role.equals(RoleAuthority.CUSTOMER)){
-            String token  = jwtService.generateAccessToken(email);
+            String token  = jwtService.generateActivationToken(email);
             activationTokenRepo.save(new UserActivationToken(email,token));
             customerRegistration.sendEmail(token,email,"Verification Token");
 

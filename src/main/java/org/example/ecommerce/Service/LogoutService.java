@@ -4,6 +4,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
+import org.example.ecommerce.Repository.AccessTokenRepo;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -11,10 +13,11 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LogoutService {
 
-     AccessTokenService tokenService;
+     AccessTokenRepo tokenRepo;
 
-    public BasicResponse logoutUser(String token) {
-        tokenService.deleteToken(token);
+    public BasicResponse logoutUser() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+        tokenRepo.deleteByEmail(email);
         return new BasicResponse("Logout Success", 200);
     }
 }

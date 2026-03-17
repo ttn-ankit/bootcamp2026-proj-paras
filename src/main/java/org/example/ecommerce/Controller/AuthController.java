@@ -1,6 +1,5 @@
 package org.example.ecommerce.Controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -11,11 +10,7 @@ import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Request.SellerDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.LoginResponse;
-import org.example.ecommerce.Security.JWTService;
 import org.example.ecommerce.Service.*;
-import org.springframework.context.MessageSource;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,15 +24,10 @@ import java.util.Map;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthController {
     CustomerService customerService;
-    MessageSource messageSource;
-    SellerService service;
-
-    AuthenticationManager authenticationManager;
-    AccessTokenService tokenService;
-    CustomUserDetailsService userDetailsService;
+    SellerService sellerService;
+    LoginService loginService;
     LogoutService logoutService;
     ForgotPasswordService passwordService;
-    JWTService jwtService;
 
     @PostMapping("/register-customer")
     public BasicResponse registerCustomer(@Valid @RequestBody CustomerDto customerDto){
@@ -57,28 +47,18 @@ public class AuthController {
 
     @PostMapping("/register-seller")
     public BasicResponse registerSeller(@Valid @RequestBody SellerDto sellerDto){
-        return service.registerSeller(sellerDto);
+        return sellerService.registerSeller(sellerDto);
     }
 
     @PostMapping("/login")
-    public LoginResponse loginCustomer(@Valid @RequestBody LoginRequest loginRequest, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(), loginRequest.getPassword()
-                )
-        );
-        String refreshToken = jwtService.generateRefreshToken(loginRequest.getEmail());
-        String token = jwtService.generateAccessToken(loginRequest.getEmail());
-        tokenService.saveToken(token,refreshToken);
-        userDetailsService.setInvalidCountTo(0,loginRequest.getEmail());
-        return new LoginResponse(messageSource.getMessage("message.welcome",null,locale),token,refreshToken);
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest,
+                               @RequestHeader(name = "Accept-Language", required = false) Locale locale) {
+        return loginService.login(loginRequest, locale);
     }
 
     @PostMapping("/logout")
-    public BasicResponse logout(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
-        return logoutService.logoutUser(token);
+    public BasicResponse logout(){
+        return logoutService.logoutUser();
     }
 
     @PostMapping("/forgot-password")
