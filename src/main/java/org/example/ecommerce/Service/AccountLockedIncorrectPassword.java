@@ -3,15 +3,10 @@ package org.example.ecommerce.Service;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.example.ecommerce.Emails.AccountLocked;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 

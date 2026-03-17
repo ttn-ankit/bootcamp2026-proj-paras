@@ -11,16 +11,11 @@ import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.SellerProfileViewDto;
-import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Service.SellerService;
-import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Locale;
 
 @Validated
 @RestController
@@ -30,21 +25,12 @@ import java.util.Locale;
 public class SellerController {
 
     SellerService sellerService;
-    MessageSource messageSource;
 
     @PreAuthorize("hasRole('SELLER')")
     @PutMapping("update-password")
-    public BasicResponse updatePassword(@RequestBody @Valid ResetPasswordDto resetPasswordDTO, HttpServletRequest request,
-                                        @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
-        if(!resetPasswordDTO.getPassword().equals(resetPasswordDTO.getConfirmPassword())){
-            throw new APIException("password and confirm password should match", HttpStatus.BAD_REQUEST);
-        }
+    public BasicResponse updatePassword(@RequestBody @Valid ResetPasswordDto resetPasswordDTO, HttpServletRequest request){
         String token = request.getHeader("Authorization").substring(7);
-        sellerService.updateMyPassword(token  , resetPasswordDTO.getPassword());
-        String response = messageSource.getMessage("message.seller.password.updated",null,locale);
-        return new BasicResponse(response,true);
-
+        return sellerService.updateMyPassword(token  , resetPasswordDTO);
     }
 
     @PreAuthorize("hasRole('SELLER')")
@@ -52,7 +38,6 @@ public class SellerController {
     public SellerProfileViewDto viewMyProfileDetails(HttpServletRequest request){
         String token = request.getHeader("Authorization").substring(7);
         return sellerService.getMyProfile(token);
-
     }
 
     @PreAuthorize("hasRole('SELLER')")
@@ -81,18 +66,13 @@ public class SellerController {
 
             @RequestParam(value = "zipCode", required = false)
             @Digits(integer = 6, fraction = 0, message = "Zip code must be a numeric value with up to 6 digits.")
-            Integer zipCode,
+            String zipCode,
 
-            HttpServletRequest request,
-
-            @RequestHeader(name = "Accept-Language", required = false) Locale locale
+            HttpServletRequest request
     ){
 
         String token = request.getHeader("Authorization").substring(7);
-        sellerService.updateSellerAddress(id,city,state,addressLine,label,country,zipCode,token);
-        String response = messageSource.getMessage("message.seller.address.updated",null,locale);
-        return new BasicResponse(response,true);
-
+        return sellerService.updateSellerAddress(id,city,state,addressLine,label,country,zipCode,token);
     }
 
 
@@ -126,15 +106,9 @@ public class SellerController {
             @RequestParam(value = "image", required = false)
             MultipartFile image,
 
-            HttpServletRequest request,
-            @RequestHeader(name = "Accept-Language", required = false) Locale locale
+            HttpServletRequest request
     ){
         String token = request.getHeader("Authorization").substring(7);
-        sellerService.updateMyProfile(token,firstName,lastName,middleName,gst,companyName,contact,image);
-
-        String response = messageSource.getMessage("message.seller.profile.updated",null,locale);
-        return new BasicResponse(response,true);
+        return sellerService.updateMyProfile(token,firstName,lastName,middleName,gst,companyName,contact,image);
     }
-
-
 }

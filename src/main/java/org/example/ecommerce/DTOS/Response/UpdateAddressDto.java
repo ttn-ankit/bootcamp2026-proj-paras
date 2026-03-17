@@ -3,16 +3,20 @@ package org.example.ecommerce.DTOS.Response;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Setter
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerGetAllResponse {
-         Long id;
-         String fullName;
-         String email;
-         Boolean isActive;
-    }
+public class UpdateAddressDto {
 
+     Long id;
 
+     String city;
+     String state;
+     String country;
+     String addressLine;
+     String zipCode;
+     String label;
+
+}

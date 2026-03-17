@@ -16,5 +16,6 @@ public class LoginRequest {
     @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,6}$",message = "Invalid email format")
      String email;
 
+    @NotNull(message = "Password Required")
      String password;
 }

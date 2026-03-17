@@ -6,12 +6,13 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.CustomerDto;
-import org.example.ecommerce.DTOS.Response.AddressResponse;
+import org.example.ecommerce.DTOS.Response.UpdateAddressDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
-import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
+import org.example.ecommerce.DTOS.Response.AdminCustomerResponse;
 import org.example.ecommerce.DTOS.Response.CustomerProfileViewDto;
 import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.*;
+import org.example.ecommerce.Entity.Enum.RoleAuthority;
 import org.example.ecommerce.GlobalExceptions.*;
 import org.example.ecommerce.Repository.*;
 import org.example.ecommerce.Security.JWTService;
@@ -51,7 +52,7 @@ public class CustomerService {
      MessageSource messageSource;
      JWTService jwtService;
 
-    public String registerCustomer(CustomerDto dto) {
+    public BasicResponse registerCustomer(CustomerDto dto) {
         Customer customer = new Customer();
 
         customer.setFirstName(dto.getFirstName());
@@ -66,9 +67,7 @@ public class CustomerService {
         customer.setIsDeleted(false);
         customer.setIsLocked(false);
         customer.setInvalidAttemptCount(0);
-
-        try {
-            List<Address> sellerAddresses = dto.getAddressesDTO().stream()
+            List<Address> customerAddresses = dto.getAddressesDTO().stream()
                     .map(
                             addressDTO -> {
                                 Address address = new Address();
@@ -84,16 +83,13 @@ public class CustomerService {
                     )
                     .collect(Collectors.toList());
 
-            customer.setAddresses(sellerAddresses);
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
+            customer.setAddresses(customerAddresses);
 
         if(userRepository.existsByEmail(customer.getEmail())){
             throw new APIException("Email Already Found", HttpStatus.BAD_REQUEST);
         }
         Role customerRole = new Role();
-        customerRole.setAuthority("CUSTOMER");
+        customerRole.setAuthority(RoleAuthority.CUSTOMER);
         Role role = Optional.ofNullable(roleRepository.findByAuthority("CUSTOMER")).orElse(customerRole);
         List<Role> roles = new ArrayList<>();
         roles.add(role);
@@ -105,7 +101,8 @@ public class CustomerService {
         activationTokenRepo.save(new UserActivationToken(email,token));
         customerRegistration.sendEmail(token,email,"Verification Token");
         userRepository.save(customer);
-        return "New Customer Registered Successfully";
+        return new BasicResponse("New Customer Registered Successfully", 200);
+
     }
 
     public BasicResponse activateCustomer(String token, Locale locale) {
@@ -115,14 +112,14 @@ public class CustomerService {
         if(customer!=null){
             if(customer.getIsActive()){
                 String response = messageSource.getMessage("message.account.activated.active",null,locale);
-                return new BasicResponse(response,true);
+                return new BasicResponse(response,200);
             }
             if(userActivationToken==null){
                 token  = jwtService.generateAccessToken(email);
                 activationTokenRepo.save(new UserActivationToken(email,token));
                 customerRegistration.sendEmail(token,email,"Verification Token");
                 String response = messageSource.getMessage("message.account.activated.null.resend",null,locale);
-                return new BasicResponse(response,true);
+                return new BasicResponse(response,200);
             }
             if(!userActivationToken.getToken().equals(token)){
                 token  = jwtService.generateAccessToken(email);
@@ -130,17 +127,17 @@ public class CustomerService {
                 customerRegistration.sendEmail(token,email,"Verification Token");
 
                 String response = messageSource.getMessage("message.account.activated.resend",null,locale);
-                return new BasicResponse(response,true);
+                return new BasicResponse(response,200);
             }
             activationTokenRepo.delete(userActivationToken);
             customer.setIsActive(true);
             userRepository.save(customer);
             String response = messageSource.getMessage("message.account.activated",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
 
         String response = messageSource.getMessage("message.account.not.activated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
     }
 
     public BasicResponse reSendActivationLink(String email,Locale locale) {
@@ -151,20 +148,20 @@ public class CustomerService {
         if(customer.getIsActive()){
 
             String response = messageSource.getMessage("message.account.activated.active",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
-        String role = customer.getRoles().get(0).getAuthority();
-        if(role.equals("CUSTOMER")){
+        RoleAuthority role = customer.getRoles().get(0).getAuthority();
+        if(role.equals(RoleAuthority.CUSTOMER)){
             String token  = jwtService.generateAccessToken(email);
             activationTokenRepo.save(new UserActivationToken(email,token));
             customerRegistration.sendEmail(token,email,"Verification Token");
 
             String response = messageSource.getMessage("message.account.activated.link.send",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
 
         String response = messageSource.getMessage("message.account.activated.by.admin",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
     }
 
     @Transactional
@@ -177,7 +174,7 @@ public class CustomerService {
 
         if(customer.getIsActive()){
             String response = messageSource.getMessage("message.account.already.activated",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
         customer.setIsActive(true);
         String email = customer.getEmail();
@@ -185,7 +182,7 @@ public class CustomerService {
 
         accountActivatedEmail.sendEmail("your Account activated please check", email,"Activation Mail");
         String response = messageSource.getMessage("message.accountactivated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
 
     }
 
@@ -198,7 +195,7 @@ public class CustomerService {
 
         if(!customer.getIsActive()){
             String response = messageSource.getMessage("message.account.already.deactivated",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
         customer.setIsActive(false);
         String email = customer.getEmail();
@@ -207,11 +204,11 @@ public class CustomerService {
         accountActivatedEmail.sendEmail("your Account has been de-activated please check",email,"Deactivation Email");
 
         String response = messageSource.getMessage("message.accountdeactivated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
 
     }
 
-    public void updateProfilePassword(String token, String password, String confirmPassword) {
+    public BasicResponse updateProfilePassword(String token, String password, String confirmPassword) {
 
         if(!password.equals(confirmPassword)){
             throw new APIException("Passwords do not match.", HttpStatus.BAD_REQUEST);
@@ -222,10 +219,11 @@ public class CustomerService {
         customer.setPasswordUpdateDate(LocalDateTime.now());
         customerRepository.save(customer);
         accountActivatedEmail.sendEmail("your password has been changed", email, "Account Password Changed");
+        return new BasicResponse("Password Changed",200);
 
     }
 
-    public void addNewCustomerAddress(String token, AddressResponse address) {
+    public BasicResponse addNewCustomerAddress(String token, UpdateAddressDto address) {
 
         String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
@@ -243,9 +241,10 @@ public class CustomerService {
 
 
         customerRepository.save(customer);
+        return new BasicResponse("Address saved",200);
     }
 
-    public void deletedThisAddress(Long id, String token) {
+    public BasicResponse deletedThisAddress(Long id, String token) {
 
         String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
@@ -259,18 +258,19 @@ public class CustomerService {
             throw new APIException("Not your address you can not delete this",HttpStatus.BAD_REQUEST);
         }
         addressRepository.delete(myAddress);
+        return new BasicResponse("Address deleted",200);
     }
 
-    public List<CustomerGetAllResponse> getAllCustomer(Integer pageSize, Integer pageOffset, String sort, String email) {
+    public List<AdminCustomerResponse> getAllCustomer(Integer pageSize, Integer pageOffset, String sort, String email) {
 
         Page<Customer> pageOfCustomer =
                 customerRepository.findAll(PageRequest.of(pageOffset,pageSize, Sort.by(sort).descending()),email);
 
         List<Customer> customersFromDatabase = pageOfCustomer.getContent();
 
-        List<CustomerGetAllResponse> customers = customersFromDatabase.stream()
+        List<AdminCustomerResponse> customers = customersFromDatabase.stream()
                 .map(customer -> {
-                    CustomerGetAllResponse response = new CustomerGetAllResponse();
+                    AdminCustomerResponse response = new AdminCustomerResponse();
                     response.setId(customer.getId());
                     response.setFullName((
                             Optional.ofNullable(customer.getFirstName()).orElse("")+" "+
@@ -300,16 +300,15 @@ public class CustomerService {
 
     }
 
-    public List<AddressResponse> getAllCustomerAddress(String token) {
+    public List<UpdateAddressDto> getAllCustomerAddress(String token) {
 
         String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
-        List<AddressResponse> customerAddresses = new ArrayList<>();
-        try {
+        List<UpdateAddressDto> customerAddresses;
             customerAddresses = customer.getAddresses().stream()
                     .map(
                             address -> {
-                                AddressResponse addressDTO = new AddressResponse();
+                                UpdateAddressDto addressDTO = new UpdateAddressDto();
                                 addressDTO.setCity(address.getCity());
                                 addressDTO.setState(address.getState());
                                 addressDTO.setCountry(address.getCountry());
@@ -321,15 +320,11 @@ public class CustomerService {
                             }
                     )
                     .toList();
-        }
-        catch(NullPointerException e){
-
-        }
 
         return customerAddresses;
     }
 
-    public String updateCustomerProfileFields(String token, String firstName, String lastName, String middleName, String contact, MultipartFile image) {
+    public BasicResponse updateCustomerProfileFields(String token, String firstName, String lastName, String middleName, String contact, MultipartFile image) {
 
 
         String email = jwtService.extractUsername(token);
@@ -368,12 +363,10 @@ public class CustomerService {
         }
 
         customerRepository.save(customer);
-
-
-        return "Profile updated successfully";
+        return new BasicResponse("Profile updated successfully",200);
     }
 
-    public void updateAddress(Long id, String city, String state, String addressLine, String label, String country, Integer zipCode, String token) {
+    public BasicResponse updateAddress(Long id, String city, String state, String addressLine, String label, String country, String zipCode, String token) {
 
         String email = jwtService.extractUsername(token);
         Customer customer = customerRepository.findByEmail(email);
@@ -403,6 +396,7 @@ public class CustomerService {
 
         addressRepository.save(myAddress);
 
+        return new BasicResponse("Address Updated",200);
 
     }
 

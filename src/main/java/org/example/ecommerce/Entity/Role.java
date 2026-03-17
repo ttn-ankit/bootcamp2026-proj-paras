@@ -3,8 +3,7 @@ package org.example.ecommerce.Entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.List;
+import org.example.ecommerce.Entity.Enum.RoleAuthority;
 
 @Entity
 @Getter
@@ -18,5 +17,6 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
      Long Id;
 
-     String authority;
+    @Enumerated(EnumType.STRING)
+    RoleAuthority authority;
 }

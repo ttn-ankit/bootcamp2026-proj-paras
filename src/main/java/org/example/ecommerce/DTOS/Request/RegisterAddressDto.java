@@ -3,6 +3,7 @@ package org.example.ecommerce.DTOS.Request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -11,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AddressDto {
+public class RegisterAddressDto {
 
      Long id;
 
@@ -23,6 +24,7 @@ public class AddressDto {
      String country;
      String addressLine;
     @NotNull(message = "zip code can no be blank")
-     Integer zipCode;
-     String label;
+    @Pattern(regexp = "^[0-9]{6}$", message = "Invalid Zipcode")
+     String zipCode;
+     String label; //enum
 }

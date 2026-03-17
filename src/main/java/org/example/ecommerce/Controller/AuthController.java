@@ -43,13 +43,11 @@ public class AuthController {
     JWTService jwtService;
 
     @PostMapping("/register-customer")
-    public BasicResponse registerCustomer(@Valid @RequestBody CustomerDto customerDto, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
+    public BasicResponse registerCustomer(@Valid @RequestBody CustomerDto customerDto){
         if(!customerDto.getPassword().equals(customerDto.getConfirmPassword())){
             throw new APIException("Password and Confirm Password Does not match", HttpStatus.BAD_REQUEST);
         }
-        customerService.registerCustomer(customerDto);
-        String response = messageSource.getMessage("message.customer.registered", null, locale);
-        return new BasicResponse(response, true);
+        return customerService.registerCustomer(customerDto);
     }
 
     @PutMapping("/verify")
@@ -64,13 +62,8 @@ public class AuthController {
     }
 
     @PostMapping("/register-seller")
-    public BasicResponse registerSeller(@Valid @RequestBody SellerDto sellerDto, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-        if(!sellerDto.getPassword().equals(sellerDto.getConfirmPassword())){
-            throw new APIException("Password and Confirm Password Does not match", HttpStatus.BAD_REQUEST);
-        }
-        service.registerSeller(sellerDto);
-        String response = messageSource.getMessage("message.seller.register", null, locale);
-        return new BasicResponse(response, true);
+    public BasicResponse registerSeller(@Valid @RequestBody SellerDto sellerDto){
+        return service.registerSeller(sellerDto);
     }
 
     @PostMapping("/login")
@@ -93,28 +86,17 @@ public class AuthController {
         String token = request.getHeader("Authorization").substring(7);
         logoutService.logoutUser(token);
         String response = messageSource.getMessage("message.logout", null, locale);
-        return new BasicResponse(response, true);
+        return new BasicResponse(response, 200);
     }
 
     @PostMapping("/forgot-password")
-    public BasicResponse forgetPassword(@RequestParam("email") String email, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-        if(passwordService.getForgetPasswordTokenUser(email) == null){
-            throw new APIException("Email does not exist", HttpStatus.BAD_REQUEST);
-        }
-        passwordService.processForgotPassword(email);
-        String response = messageSource.getMessage("message.forgetpassword",null,locale);
-        return new BasicResponse(response,true);
+    public BasicResponse forgetPassword(@RequestParam("email") String email){
+        return passwordService.processForgotPassword(email);
     }
 
     @PutMapping("/resetPassword")
     public BasicResponse resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto,
-                                       @PathParam("token") String token,
-                                       @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-        if(!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())){
-            throw new APIException("Password does not match",HttpStatus.BAD_REQUEST);
-        }
-        passwordService.setPassword(token, resetPasswordDto.getPassword());
-        String response = messageSource.getMessage("message.reset.password", null, locale);
-        return new BasicResponse(response, true);
+                                       @PathParam("token") String token){
+        return passwordService.setPassword(token, resetPasswordDto);
     }
 }

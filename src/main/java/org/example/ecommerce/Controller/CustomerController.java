@@ -9,18 +9,16 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
-import org.example.ecommerce.DTOS.Response.AddressResponse;
+import org.example.ecommerce.DTOS.Response.UpdateAddressDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.CustomerProfileViewDto;
 import org.example.ecommerce.Service.CustomerService;
-import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Locale;
 
 @RestController
 @Validated
@@ -30,58 +28,36 @@ import java.util.Locale;
 public class CustomerController {
 
     CustomerService customerService;
-    MessageSource messageSource;
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/add-address")
-    public BasicResponse addNewAddressForCustomer(@Valid @RequestBody AddressResponse address,
-                                                  HttpServletRequest request,
-                                                  @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
+    public BasicResponse addNewAddressForCustomer(@Valid @RequestBody UpdateAddressDto address,
+                                                  HttpServletRequest request){
         String token = request.getHeader("Authorization").substring(7);
-
-        customerService.addNewCustomerAddress(token,address);
-
-        String response = messageSource.getMessage("message.add.customeraddress",null,locale);
-        return new BasicResponse(response,true);
+        return customerService.addNewCustomerAddress(token,address);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/delete-address/{id}")
-    public BasicResponse deleteExistingAddress(@PathVariable("id") Long id, HttpServletRequest request,
-                                          @RequestHeader(name = "Accept-Language", required = false) Locale locale){
+    public BasicResponse deleteExistingAddress(@PathVariable Long id, HttpServletRequest request){
 
         String token = request.getHeader("Authorization").substring(7);
-
-        customerService.deletedThisAddress(id,token);
-
-        String response = messageSource.getMessage("message.delete.customeraddress",null,locale);
-        return new BasicResponse(response,true);
-
+        return customerService.deletedThisAddress(id,token);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/update-password")
-    public BasicResponse updateMyPassword(HttpServletRequest request, @Valid @RequestBody ResetPasswordDto passwordDTO,
-                                     @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
+    public BasicResponse updateMyPassword(HttpServletRequest request, @Valid @RequestBody ResetPasswordDto passwordDTO){
         String token = request.getHeader("Authorization").substring(7);
-
-        customerService.updateProfilePassword(token,passwordDTO.getPassword(), passwordDTO.getConfirmPassword());
-        String response = messageSource.getMessage("message.updated.password",null,locale);
-        return new BasicResponse(response,true);
-
+        return customerService.updateProfilePassword(token,passwordDTO.getPassword(), passwordDTO.getConfirmPassword());
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/get-address")
-    public List<AddressResponse> getAllAddressOfCustomer(HttpServletRequest request){
+    public List<UpdateAddressDto> getAllAddressOfCustomer(HttpServletRequest request){
         String token = request.getHeader("Authorization").substring(7);
-
         return customerService.getAllCustomerAddress(token);
     }
-
-
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/profile-details")
@@ -111,16 +87,11 @@ public class CustomerController {
 
             @RequestParam(value = "image", required = false)
             MultipartFile image,
-            HttpServletRequest request,
-            @RequestHeader(name = "Accept-Language", required = false) Locale locale
+            HttpServletRequest request
     ){
 
         String token = request.getHeader("Authorization").substring(7);
-
-        customerService.updateCustomerProfileFields(token,firstName,lastName,middleName,contact,image);
-        String response = messageSource.getMessage("message.updated.customerprofile",null,locale);
-        return new BasicResponse(response,true);
-
+        return customerService.updateCustomerProfileFields(token,firstName,lastName,middleName,contact,image);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -149,21 +120,13 @@ public class CustomerController {
 
             @RequestParam(value = "zipCode", required = false)
             @Digits(integer = 6, fraction = 0, message = "Zip code must be a numeric value with up to 6 digits.")
-            Integer zipCode,
-            HttpServletRequest request,
-            @RequestHeader(name = "Accept-Language", required = false) Locale locale
+            String zipCode,
+            HttpServletRequest request
     ){
 
         String token = request.getHeader("Authorization").substring(7);
-
-        customerService.updateAddress(id,city,state,addressLine,label,country,zipCode,token);
-        String response = messageSource.getMessage("message.updated.customeraddress",null,locale);
-        return new BasicResponse(response,true);
+        return customerService.updateAddress(id,city,state,addressLine,label,country,zipCode,token);
     }
-
-
-
-
 }
 
 

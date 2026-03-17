@@ -4,8 +4,8 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
-import org.example.ecommerce.DTOS.Response.CustomerGetAllResponse;
-import org.example.ecommerce.DTOS.Response.SellerGetAllResponse;
+import org.example.ecommerce.DTOS.Response.AdminCustomerResponse;
+import org.example.ecommerce.DTOS.Response.AdminSellerResponse;
 import org.example.ecommerce.Service.CustomerService;
 import org.example.ecommerce.Service.SellerService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -54,7 +54,7 @@ public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/customers")
-    public List<CustomerGetAllResponse> getAllCustomers(
+    public List<AdminCustomerResponse> getAllCustomers(
             @RequestParam(value = "pageSize",defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageOffset",defaultValue = "0") Integer pageOffset,
             @RequestParam(value = "sort",defaultValue = "id") String sort,
@@ -65,7 +65,7 @@ public class AdminController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get/sellers")
-    public List<SellerGetAllResponse> getAllSellers(
+    public List<AdminSellerResponse> getAllSellers(
             @RequestParam(value = "pageSize",defaultValue = "10") Integer pageSize,
             @RequestParam(value = "pageOffset",defaultValue = "0") Integer pageOffset,
             @RequestParam(value = "sort",defaultValue = "id") String sort,

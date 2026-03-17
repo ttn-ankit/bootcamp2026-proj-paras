@@ -8,13 +8,11 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @NoArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class SellerGetAllResponse {
+public class AdminCustomerResponse {
+         Long id;
+         String fullName;
+         String email;
+         Boolean isActive;
+    }
 
-     String fullName;
-     Long id;
-     String email;
-     String companyName;
-     Boolean isActive;
-     AddressResponse companyAddress;
-     String contact;
-}
+

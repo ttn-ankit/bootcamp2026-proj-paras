@@ -4,6 +4,8 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
+import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.ForgetPasswordToken;
 import org.example.ecommerce.Entity.User;
@@ -28,13 +30,15 @@ public class ForgotPasswordService {
      EmailService forgotPasswordEmail;
      JWTService jwtService;
 
-    public void processForgotPassword(String email){
+    public BasicResponse processForgotPassword(String email){
 
         validateEmail(email);
 
         User user = userRepository.findByEmail(email);
-
-        if(user != null){
+        if(user == null){
+            throw new APIException("Email does not exist", HttpStatus.BAD_REQUEST);
+        }
+        else{
 
             if(user.getIsLocked()){
                 throw new APIException(
@@ -54,6 +58,7 @@ public class ForgotPasswordService {
 
             forgotPasswordEmail.sendEmail(token,email,"Reset Token");
         }
+        return new BasicResponse("mail sent",200);
     }
     private void validateEmail(String email){
 
@@ -67,13 +72,11 @@ public class ForgotPasswordService {
             throw new APIException("email is not valid",HttpStatus.BAD_REQUEST);
         }
     }
-
-    public User getForgetPasswordTokenUser(String email) {
-        return userRepository.findByEmail(email);
-
-    }
     @Transactional
-    public void setPassword(String token, String password) {
+    public BasicResponse setPassword(String token, ResetPasswordDto resetPasswordDto) {
+        if(!resetPasswordDto.getPassword().equals(resetPasswordDto.getConfirmPassword())){
+            throw new APIException("Password does not match",HttpStatus.BAD_REQUEST);
+        }
         String email = jwtService.extractUsername(token);
         if(!jwtService.validateToken(token,email)){
             throw new APIException("Token Expired", HttpStatus.UNAUTHORIZED);
@@ -92,13 +95,15 @@ public class ForgotPasswordService {
         if(user.getIsLocked()){
             throw new APIException("Your Account is locked. Contact admin to unlock your account", HttpStatus.BAD_REQUEST);
         }
-        String userPassword = passwordEncoder.encode(password);
+        String userPassword = passwordEncoder.encode(resetPasswordDto.getPassword());
         user.setPassword(userPassword);
         user.setInvalidAttemptCount(0);
         user.setPasswordUpdateDate(LocalDateTime.now());
         userRepository.save(user);
 
         forgetPasswordTokenRepo.deleteById(email);
+        removeToken(token);
+        return new BasicResponse("Password reset success", 200);
     }
 
     public void setForgetTokenInDataBase(String email, String token) {

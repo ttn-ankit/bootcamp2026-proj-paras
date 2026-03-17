@@ -2,7 +2,7 @@ package org.example.ecommerce.DTOS.Response;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.example.ecommerce.DTOS.Request.AddressDto;
+import org.example.ecommerce.DTOS.Request.RegisterAddressDto;
 
 @Setter
 @Getter
@@ -18,6 +18,6 @@ public class SellerProfileViewDto {
      String companyContact;
      String companyName;
      String gst;
-     AddressDto address;
+     RegisterAddressDto address;
      String image;
 }

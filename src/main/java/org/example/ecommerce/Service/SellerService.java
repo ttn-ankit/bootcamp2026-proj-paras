@@ -3,14 +3,16 @@ package org.example.ecommerce.Service;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.example.ecommerce.DTOS.Request.AddressDto;
+import org.example.ecommerce.DTOS.Request.RegisterAddressDto;
+import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Request.SellerDto;
-import org.example.ecommerce.DTOS.Response.AddressResponse;
+import org.example.ecommerce.DTOS.Response.UpdateAddressDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
-import org.example.ecommerce.DTOS.Response.SellerGetAllResponse;
+import org.example.ecommerce.DTOS.Response.AdminSellerResponse;
 import org.example.ecommerce.DTOS.Response.SellerProfileViewDto;
 import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.Address;
+import org.example.ecommerce.Entity.Enum.RoleAuthority;
 import org.example.ecommerce.Entity.Role;
 import org.example.ecommerce.Entity.Seller;
 import org.example.ecommerce.GlobalExceptions.APIException;
@@ -51,7 +53,10 @@ public class SellerService {
 
    AddressRepository addressRepository;
 
-    public String registerSeller(SellerDto sellerDTO) {
+    public BasicResponse registerSeller(SellerDto sellerDTO) {
+        if(!sellerDTO.getPassword().equals(sellerDTO.getConfirmPassword())){
+            throw new APIException("Password and Confirm Password Does not match", HttpStatus.BAD_REQUEST);
+        }
 
         Seller seller = new Seller();
 
@@ -70,7 +75,7 @@ public class SellerService {
         seller.setIsLocked(false);
         seller.setInvalidAttemptCount(0);
 
-        AddressDto addressDTO = sellerDTO.getAddressesDTO();
+        RegisterAddressDto addressDTO = sellerDTO.getAddressesDTO();
         Address sellerAddress = new Address();
         sellerAddress.setCity(addressDTO.getCity());
         sellerAddress.setAddressLine(addressDTO.getAddressLine());
@@ -86,15 +91,15 @@ public class SellerService {
         }
         List<Role> roles = new ArrayList<>();
         Role sellerRole = new Role();
-        sellerRole.setAuthority("SELLER");
+        sellerRole.setAuthority(RoleAuthority.SELLER);
         Role role = Optional.ofNullable(roleRepository.findByAuthority("SELLER")).orElse(sellerRole);
         roles.add(role);
         seller.setRoles(roles);
         seller.setPassword(bCryptPasswordEncoder.encode(seller.getPassword()));
         String email = seller.getEmail();
         sellerRegistrationEmail.sendEmail("Application Submitted",email,"Verification Token");
-        Seller success =  userRepository.save(seller);
-        return "New Seller Registered Successfully Awaits Approval check email for more details";
+        userRepository.save(seller);
+        return new BasicResponse("New Seller Registered Successfully Awaits Approval check email for more details", 200);
     }
 
 
@@ -106,7 +111,7 @@ public class SellerService {
 
         if(seller.getIsActive()){
             String response = messageSource.getMessage("message.account.already.activated",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
         seller.setIsActive(true);
         String email = seller.getEmail();
@@ -115,7 +120,7 @@ public class SellerService {
         accountActivatedEmail.sendEmail("your Account activated please check", email, "Account Activated");
 
         String response = messageSource.getMessage("message.accountactivated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
     }
 
     public BasicResponse DeActivateSellerById(Long id,Locale locale) {
@@ -126,7 +131,7 @@ public class SellerService {
 
         if(!seller.getIsActive()){
             String response = messageSource.getMessage("message.account.already.deactivated",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
         seller.setIsActive(false);
         String email = seller.getEmail();
@@ -135,28 +140,33 @@ public class SellerService {
         accountActivatedEmail.sendEmail("your Account has been de-activated please check", email, "Account Activated");
 
         String response = messageSource.getMessage("message.accountdeactivated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
 
     }
 
 
-    public void updateMyPassword(String token,String password) {
+    public BasicResponse updateMyPassword(String token, ResetPasswordDto  resetPasswordDTO) {
+
+        if(!resetPasswordDTO.getPassword().equals(resetPasswordDTO.getConfirmPassword())){
+            throw new APIException("password and confirm password should match", HttpStatus.BAD_REQUEST);
+        }
         String email = jwtService.extractUsername(token);
         Seller seller = sellerRepository.findByEmail(email);
-        seller.setPassword(bCryptPasswordEncoder.encode(password));
+        seller.setPassword(bCryptPasswordEncoder.encode(resetPasswordDTO.getPassword()));
         seller.setPasswordUpdateDate(LocalDateTime.now());
         sellerRepository.save(seller);
         accountActivatedEmail.sendEmail("your password has been changed",email, "Account Password Changed");
+        return new BasicResponse("Password Changed",200);
     }
 
     @Transactional
-    public List<SellerGetAllResponse> getAllSeller(Integer pageSize, Integer pageOffset, String sort, String email) {
+    public List<AdminSellerResponse> getAllSeller(Integer pageSize, Integer pageOffset, String sort, String email) {
         Page<Seller> pageOfSeller =
                 sellerRepository.findAll(PageRequest.of(pageOffset, pageSize, Sort.by(sort)),email);
         List<Seller> sellerFromDatabase = pageOfSeller.getContent();
-        List<SellerGetAllResponse> sellers = sellerFromDatabase.stream()
+        List<AdminSellerResponse> sellers = sellerFromDatabase.stream()
                 .map(seller -> {
-                    SellerGetAllResponse response = new SellerGetAllResponse();
+                    AdminSellerResponse response = new AdminSellerResponse();
                     response.setId(seller.getId());
                     response.setContact(seller.getCompanyContact());
                     response.setFullName(
@@ -172,7 +182,7 @@ public class SellerService {
 
                     if (addresses != null && !addresses.isEmpty()) {
                         Address sellerAddress = addresses.get(0);
-                        AddressResponse address = new AddressResponse();
+                        UpdateAddressDto address = new UpdateAddressDto();
                         address.setZipCode(sellerAddress.getZipCode());
                         address.setAddressLine(sellerAddress.getAddressLine());
                         address.setCity(sellerAddress.getCity());
@@ -208,7 +218,7 @@ public class SellerService {
         sellerProfileViewByHimselfDTO.setLastName(seller.getLastName());
         sellerProfileViewByHimselfDTO.setIsActive(seller.getIsActive());
 
-        AddressDto addressDTO = new AddressDto();
+        RegisterAddressDto addressDTO = new RegisterAddressDto();
         addressDTO.setId(seller.getAddresses().get(0).getId());
         addressDTO.setAddressLine(seller.getAddresses().get(0).getAddressLine());
         addressDTO.setLabel(seller.getAddresses().get(0).getLabel());
@@ -226,7 +236,7 @@ public class SellerService {
 
     }
 
-    public String updateSellerAddress( Long id, String city, String state, String addressLine, String label, String country, Integer zipCode, String token) {
+    public BasicResponse updateSellerAddress( Long id, String city, String state, String addressLine, String label, String country, String zipCode, String token) {
         String email = jwtService.extractUsername(token);
         Seller seller = sellerRepository.findByEmail(email);
 
@@ -254,12 +264,10 @@ public class SellerService {
         myAddress.setCountry(country);
 
         addressRepository.save(myAddress);
-
-
-        return "Address changed Successfully";
+        return new BasicResponse("Address changed Successfully",200);
     }
 
-    public void updateMyProfile(String token, String firstName, String lastName, String middleName, String gst, String companyName, String contact, MultipartFile image) {
+    public BasicResponse updateMyProfile(String token, String firstName, String lastName, String middleName, String gst, String companyName, String contact, MultipartFile image) {
         String email = jwtService.extractUsername(token);
         Seller seller = Optional.ofNullable(sellerRepository.findByEmail(email)).orElseThrow(
                 ()-> new APIException("User with email is not found",HttpStatus.BAD_REQUEST)
@@ -300,6 +308,7 @@ public class SellerService {
             }
         }
         sellerRepository.save(seller);
+        return new BasicResponse("Profile Updated",200);
     }
 
 }

@@ -26,5 +26,5 @@ public class SellerDto extends UserDto{
 
     @NotNull(message = "address for the seller is required")
     @Valid
-     AddressDto addressesDTO;
+    RegisterAddressDto addressesDTO;
 }

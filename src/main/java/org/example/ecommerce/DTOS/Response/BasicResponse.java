@@ -10,5 +10,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BasicResponse {
     String message;
-    Boolean success;
+    Integer statusCode;
 }

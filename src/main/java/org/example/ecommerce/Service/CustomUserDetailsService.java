@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.Entity.Enum.RoleAuthority;
 import org.example.ecommerce.Entity.User;
 import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Repository.UserRepository;
@@ -28,8 +29,8 @@ public class CustomUserDetailsService implements UserDetailsService {
         if (user==null){
             throw new APIException("Incorrect Email. give correct email address associated with account", HttpStatus.BAD_REQUEST);
         }
-        String roleOfUser = user.getRoles().get(0).getAuthority();
-        if(roleOfUser.equals("CUSTOMER") ||  roleOfUser.equals("SELLER")){
+        RoleAuthority roleOfUser = user.getRoles().get(0).getAuthority();
+        if(roleOfUser.equals(RoleAuthority.CUSTOMER) ||  roleOfUser.equals(RoleAuthority.SELLER)){
             if(user.getIsExpired()){
                 throw new APIException("Your Password is expired please reset is using forget password",HttpStatus.BAD_REQUEST);
             }
@@ -53,7 +54,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         return org.springframework.security.core.userdetails.User.withUsername(user.getEmail())
                 .password(user.getPassword())
-                .roles(roleOfUser)
+                .roles(String.valueOf(roleOfUser))
                 .disabled(user.getIsLocked())
                 .build();
     }

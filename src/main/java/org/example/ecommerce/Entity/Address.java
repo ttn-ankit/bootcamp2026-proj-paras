@@ -20,7 +20,7 @@ public class Address {
      String state;
      String country;
      String addressLine;
-     Integer zipCode;
+     String zipCode;
      Boolean isDeleted = false;
      String label;
 
