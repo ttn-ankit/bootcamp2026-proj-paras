@@ -91,7 +91,7 @@ public class SellerService {
         List<Role> roles = new ArrayList<>();
         Role sellerRole = new Role();
         sellerRole.setAuthority(RoleAuthority.SELLER);
-        Role role = Optional.ofNullable(roleRepository.findByAuthority("SELLER")).orElse(sellerRole);
+        Role role = Optional.ofNullable(roleRepository.findByAuthority(RoleAuthority.SELLER)).orElse(sellerRole);
         roles.add(role);
         seller.setRoles(roles);
         seller.setPassword(bCryptPasswordEncoder.encode(seller.getPassword()));

@@ -61,7 +61,7 @@ public class CustomerService {
 
         customer.setFirstName(dto.getFirstName());
         customer.setMiddleName(dto.getMiddleName());
-        customer.setLastName(dto.getMiddleName());
+        customer.setLastName(dto.getLastName());
         customer.setContact(dto.getContact());
         customer.setEmail(dto.getEmail());
         customer.setPassword(dto.getPassword());
@@ -78,7 +78,7 @@ public class CustomerService {
                                 address.setCity(addressDTO.getCity());
                                 address.setAddressLine(addressDTO.getAddressLine());
                                 address.setState(addressDTO.getState());
-                                address.setCountry(address.getCountry());
+                                address.setCountry(addressDTO.getCountry());
                                 address.setZipCode(addressDTO.getZipCode());
                                 address.setLabel(addressDTO.getLabel());
                                 address.setUser(customer);
@@ -94,7 +94,7 @@ public class CustomerService {
         }
         Role customerRole = new Role();
         customerRole.setAuthority(RoleAuthority.CUSTOMER);
-        Role role = Optional.ofNullable(roleRepository.findByAuthority("CUSTOMER")).orElse(customerRole);
+        Role role = Optional.ofNullable(roleRepository.findByAuthority(RoleAuthority.CUSTOMER)).orElse(customerRole);
         List<Role> roles = new ArrayList<>();
         roles.add(role);
         customer.setRoles(roles);
@@ -258,7 +258,7 @@ public class CustomerService {
         );
 
 
-        if(customer.getId()!=myAddress.getUser().getId()){
+        if(!customer.getId().equals(myAddress.getUser().getId())){
             throw new APIException("Not your address you can not delete this",HttpStatus.BAD_REQUEST);
         }
         addressRepository.delete(myAddress);
@@ -380,7 +380,7 @@ public class CustomerService {
         );
 
 
-        if(customer.getId()!=myAddress.getUser().getId()){
+        if(!customer.getId().equals(myAddress.getUser().getId())){
             throw new APIException("Not your address you can not update this",HttpStatus.BAD_REQUEST);
         }
 

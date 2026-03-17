@@ -45,7 +45,7 @@ public class StartupData {
             List<Role> roles = new ArrayList<>();
             Role adminRole = new Role();
             adminRole.setAuthority(RoleAuthority.ADMIN);
-            Role role = Optional.ofNullable(roleRepository.findByAuthority("ADMIN")).orElse(adminRole);
+            Role role = Optional.ofNullable(roleRepository.findByAuthority(RoleAuthority.ADMIN)).orElse(adminRole);
             roles.add(role);
             admin.setRoles(roles);
             userRepository.save(admin);
