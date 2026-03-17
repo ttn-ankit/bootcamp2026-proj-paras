@@ -28,6 +28,7 @@ public class AuthController {
     LoginService loginService;
     LogoutService logoutService;
     ForgotPasswordService passwordService;
+    AccessTokenService tokenService;
 
     @PostMapping("/register-customer")
     public BasicResponse registerCustomer(@Valid @RequestBody CustomerDto customerDto){
@@ -70,5 +71,10 @@ public class AuthController {
     public BasicResponse resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto,
                                        @RequestParam("token") String token){
         return passwordService.setPassword(token, resetPasswordDto);
+    }
+
+    @PostMapping("/regenerate-access")
+    public LoginResponse regenerateLoginAcess(@RequestParam("token") String token){
+        return tokenService.regenerateLoginAccess(token);
     }
 }

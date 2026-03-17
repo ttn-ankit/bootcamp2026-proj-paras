@@ -10,7 +10,12 @@ import org.springframework.stereotype.Repository;
 public interface AccessTokenRepo extends JpaRepository<AccessToken,String> {
 
      AccessToken findByToken(String token);
+     AccessToken findByRefreshToken(String refreshToken);
      @Transactional
      @Modifying
      void deleteByEmail(String email);
+     @Transactional
+     @Modifying
+     void deleteByToken(String token);
+
 }
