@@ -1,6 +1,5 @@
 package org.example.ecommerce.Controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Pattern;
@@ -31,39 +30,32 @@ public class CustomerController {
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PostMapping("/add-address")
-    public BasicResponse addNewAddressForCustomer(@Valid @RequestBody UpdateAddressDto address,
-                                                  HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.addNewCustomerAddress(token,address);
+    public BasicResponse addNewAddressForCustomer(@Valid @RequestBody UpdateAddressDto address){
+        return customerService.addNewCustomerAddress(address);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @DeleteMapping("/delete-address/{id}")
-    public BasicResponse deleteExistingAddress(@PathVariable Long id, HttpServletRequest request){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.deletedThisAddress(id,token);
+    public BasicResponse deleteExistingAddress(@PathVariable Long id){
+        return customerService.deletedThisAddress(id);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @PutMapping("/update-password")
-    public BasicResponse updateMyPassword(HttpServletRequest request, @Valid @RequestBody ResetPasswordDto passwordDTO){
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.updateProfilePassword(token,passwordDTO.getPassword(), passwordDTO.getConfirmPassword());
+    public BasicResponse updateMyPassword(@Valid @RequestBody ResetPasswordDto passwordDTO){
+        return customerService.updateProfilePassword(passwordDTO.getPassword(), passwordDTO.getConfirmPassword());
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/get-address")
-    public List<UpdateAddressDto> getAllAddressOfCustomer(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.getAllCustomerAddress(token);
+    public List<UpdateAddressDto> getAllAddressOfCustomer(){
+        return customerService.getAllCustomerAddress();
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/profile-details")
-    public CustomerProfileViewDto viewProfile(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.getMyProfile(token);
+    public CustomerProfileViewDto viewProfile(){
+        return customerService.getMyProfile();
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -86,12 +78,9 @@ public class CustomerController {
             String contact,
 
             @RequestParam(value = "image", required = false)
-            MultipartFile image,
-            HttpServletRequest request
+            MultipartFile image
     ){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.updateCustomerProfileFields(token,firstName,lastName,middleName,contact,image);
+        return customerService.updateCustomerProfileFields(firstName,lastName,middleName,contact,image);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -120,12 +109,9 @@ public class CustomerController {
 
             @RequestParam(value = "zipCode", required = false)
             @Digits(integer = 6, fraction = 0, message = "Zip code must be a numeric value with up to 6 digits.")
-            String zipCode,
-            HttpServletRequest request
+            String zipCode
     ){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return customerService.updateAddress(id,city,state,addressLine,label,country,zipCode,token);
+        return customerService.updateAddress(id,city,state,addressLine,label,country,zipCode);
     }
 }
 

@@ -1,6 +1,5 @@
 package org.example.ecommerce.Controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Pattern;
@@ -28,16 +27,14 @@ public class SellerController {
 
     @PreAuthorize("hasRole('SELLER')")
     @PutMapping("update-password")
-    public BasicResponse updatePassword(@RequestBody @Valid ResetPasswordDto resetPasswordDTO, HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
-        return sellerService.updateMyPassword(token  , resetPasswordDTO);
+    public BasicResponse updatePassword(@RequestBody @Valid ResetPasswordDto resetPasswordDTO){
+        return sellerService.updateMyPassword(resetPasswordDTO);
     }
 
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping("/profile-details")
-    public SellerProfileViewDto viewMyProfileDetails(HttpServletRequest request){
-        String token = request.getHeader("Authorization").substring(7);
-        return sellerService.getMyProfile(token);
+    public SellerProfileViewDto viewMyProfileDetails(){
+        return sellerService.getMyProfile();
     }
 
     @PreAuthorize("hasRole('SELLER')")
@@ -66,13 +63,9 @@ public class SellerController {
 
             @RequestParam(value = "zipCode", required = false)
             @Digits(integer = 6, fraction = 0, message = "Zip code must be a numeric value with up to 6 digits.")
-            String zipCode,
-
-            HttpServletRequest request
+            String zipCode
     ){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return sellerService.updateSellerAddress(id,city,state,addressLine,label,country,zipCode,token);
+        return sellerService.updateSellerAddress(id,city,state,addressLine,label,country,zipCode);
     }
 
 
@@ -104,11 +97,8 @@ public class SellerController {
             String companyName,
 
             @RequestParam(value = "image", required = false)
-            MultipartFile image,
-
-            HttpServletRequest request
+            MultipartFile image
     ){
-        String token = request.getHeader("Authorization").substring(7);
-        return sellerService.updateMyProfile(token,firstName,lastName,middleName,gst,companyName,contact,image);
+        return sellerService.updateMyProfile(firstName,lastName,middleName,gst,companyName,contact,image);
     }
 }

@@ -21,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -53,6 +54,9 @@ public class CustomerService {
      JWTService jwtService;
 
     public BasicResponse registerCustomer(CustomerDto dto) {
+        if(!dto.getPassword().equals(dto.getConfirmPassword())){
+            throw new APIException("Password and Confirm Password Does not match", HttpStatus.BAD_REQUEST);
+        }
         Customer customer = new Customer();
 
         customer.setFirstName(dto.getFirstName());
@@ -208,12 +212,12 @@ public class CustomerService {
 
     }
 
-    public BasicResponse updateProfilePassword(String token, String password, String confirmPassword) {
+    public BasicResponse updateProfilePassword(String password, String confirmPassword) {
 
         if(!password.equals(confirmPassword)){
             throw new APIException("Passwords do not match.", HttpStatus.BAD_REQUEST);
         }
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
         customer.setPassword(bCryptPasswordEncoder.encode(password));
         customer.setPasswordUpdateDate(LocalDateTime.now());
@@ -223,9 +227,9 @@ public class CustomerService {
 
     }
 
-    public BasicResponse addNewCustomerAddress(String token, UpdateAddressDto address) {
+    public BasicResponse addNewCustomerAddress(UpdateAddressDto address) {
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
         List<Address> addresses = customer.getAddresses();
         Address address1 = new Address();
@@ -244,9 +248,9 @@ public class CustomerService {
         return new BasicResponse("Address saved",200);
     }
 
-    public BasicResponse deletedThisAddress(Long id, String token) {
+    public BasicResponse deletedThisAddress(Long id) {
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
 
         Address myAddress = addressRepository.findById(id).orElseThrow(
@@ -285,8 +289,8 @@ public class CustomerService {
     }
 
 
-    public CustomerProfileViewDto getMyProfile(String token) {
-        String email = jwtService.extractUsername(token);
+    public CustomerProfileViewDto getMyProfile() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
         CustomerProfileViewDto customerProfile = new CustomerProfileViewDto();
         customerProfile.setId(customer.getId());
@@ -300,9 +304,9 @@ public class CustomerService {
 
     }
 
-    public List<UpdateAddressDto> getAllCustomerAddress(String token) {
+    public List<UpdateAddressDto> getAllCustomerAddress() {
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
         List<UpdateAddressDto> customerAddresses;
             customerAddresses = customer.getAddresses().stream()
@@ -324,10 +328,10 @@ public class CustomerService {
         return customerAddresses;
     }
 
-    public BasicResponse updateCustomerProfileFields(String token, String firstName, String lastName, String middleName, String contact, MultipartFile image) {
+    public BasicResponse updateCustomerProfileFields(String firstName, String lastName, String middleName, String contact, MultipartFile image) {
 
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
 
         if(firstName!=null) customer.setFirstName(firstName);
@@ -366,9 +370,9 @@ public class CustomerService {
         return new BasicResponse("Profile updated successfully",200);
     }
 
-    public BasicResponse updateAddress(Long id, String city, String state, String addressLine, String label, String country, String zipCode, String token) {
+    public BasicResponse updateAddress(Long id, String city, String state, String addressLine, String label, String country, String zipCode) {
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Customer customer = customerRepository.findByEmail(email);
 
         Address myAddress = addressRepository.findById(id).orElseThrow(

@@ -3,6 +3,7 @@ package org.example.ecommerce.Service;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -12,7 +13,8 @@ public class LogoutService {
 
      AccessTokenService tokenService;
 
-    public void logoutUser(String token) {
+    public BasicResponse logoutUser(String token) {
         tokenService.deleteToken(token);
+        return new BasicResponse("Logout Success", 200);
     }
 }

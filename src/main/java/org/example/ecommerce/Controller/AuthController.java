@@ -12,11 +12,9 @@ import org.example.ecommerce.DTOS.Request.ResetPasswordDto;
 import org.example.ecommerce.DTOS.Request.SellerDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.LoginResponse;
-import org.example.ecommerce.GlobalExceptions.APIException;
 import org.example.ecommerce.Security.JWTService;
 import org.example.ecommerce.Service.*;
 import org.springframework.context.MessageSource;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.validation.annotation.Validated;
@@ -44,14 +42,11 @@ public class AuthController {
 
     @PostMapping("/register-customer")
     public BasicResponse registerCustomer(@Valid @RequestBody CustomerDto customerDto){
-        if(!customerDto.getPassword().equals(customerDto.getConfirmPassword())){
-            throw new APIException("Password and Confirm Password Does not match", HttpStatus.BAD_REQUEST);
-        }
         return customerService.registerCustomer(customerDto);
     }
 
     @PutMapping("/verify")
-    public BasicResponse activateRegisteredUser(@PathParam("token") String token, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
+    public BasicResponse activateRegisteredUser(@RequestParam("token") String token, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
         return customerService.activateCustomer(token,locale);
     }
 
@@ -82,11 +77,9 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public BasicResponse logout(HttpServletRequest request, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
+    public BasicResponse logout(HttpServletRequest request){
         String token = request.getHeader("Authorization").substring(7);
-        logoutService.logoutUser(token);
-        String response = messageSource.getMessage("message.logout", null, locale);
-        return new BasicResponse(response, 200);
+        return logoutService.logoutUser(token);
     }
 
     @PostMapping("/forgot-password")
@@ -96,7 +89,7 @@ public class AuthController {
 
     @PutMapping("/resetPassword")
     public BasicResponse resetPassword(@Valid @RequestBody ResetPasswordDto resetPasswordDto,
-                                       @PathParam("token") String token){
+                                       @RequestParam("token") String token){
         return passwordService.setPassword(token, resetPasswordDto);
     }
 }

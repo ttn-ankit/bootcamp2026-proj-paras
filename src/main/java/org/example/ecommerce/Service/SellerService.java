@@ -20,12 +20,12 @@ import org.example.ecommerce.Repository.AddressRepository;
 import org.example.ecommerce.Repository.RoleRepository;
 import org.example.ecommerce.Repository.SellerRepository;
 import org.example.ecommerce.Repository.UserRepository;
-import org.example.ecommerce.Security.JWTService;
 import org.springframework.context.MessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,7 +49,6 @@ public class SellerService {
      EmailService accountActivatedEmail;
     RoleRepository roleRepository;
     MessageSource messageSource;
-    JWTService jwtService;
 
    AddressRepository addressRepository;
 
@@ -145,12 +144,12 @@ public class SellerService {
     }
 
 
-    public BasicResponse updateMyPassword(String token, ResetPasswordDto  resetPasswordDTO) {
+    public BasicResponse updateMyPassword(ResetPasswordDto  resetPasswordDTO) {
 
         if(!resetPasswordDTO.getPassword().equals(resetPasswordDTO.getConfirmPassword())){
             throw new APIException("password and confirm password should match", HttpStatus.BAD_REQUEST);
         }
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
         seller.setPassword(bCryptPasswordEncoder.encode(resetPasswordDTO.getPassword()));
         seller.setPasswordUpdateDate(LocalDateTime.now());
@@ -205,9 +204,9 @@ public class SellerService {
 
 
 
-    public SellerProfileViewDto getMyProfile(String token) {
+    public SellerProfileViewDto getMyProfile() {
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         SellerProfileViewDto sellerProfileViewByHimselfDTO = new SellerProfileViewDto();
         Seller seller = sellerRepository.findByEmail(email);
         sellerProfileViewByHimselfDTO.setId(seller.getId());
@@ -236,8 +235,8 @@ public class SellerService {
 
     }
 
-    public BasicResponse updateSellerAddress( Long id, String city, String state, String addressLine, String label, String country, String zipCode, String token) {
-        String email = jwtService.extractUsername(token);
+    public BasicResponse updateSellerAddress( Long id, String city, String state, String addressLine, String label, String country, String zipCode) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         Address myAddress = addressRepository.findById(id).orElseThrow(
@@ -267,8 +266,8 @@ public class SellerService {
         return new BasicResponse("Address changed Successfully",200);
     }
 
-    public BasicResponse updateMyProfile(String token, String firstName, String lastName, String middleName, String gst, String companyName, String contact, MultipartFile image) {
-        String email = jwtService.extractUsername(token);
+    public BasicResponse updateMyProfile(String firstName, String lastName, String middleName, String gst, String companyName, String contact, MultipartFile image) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = Optional.ofNullable(sellerRepository.findByEmail(email)).orElseThrow(
                 ()-> new APIException("User with email is not found",HttpStatus.BAD_REQUEST)
         );
