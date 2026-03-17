@@ -58,6 +58,10 @@ public class    CustomJWTAuthenticationAuthorization extends OncePerRequestFilte
 
             String email = jwtService.extractUsername(token);
 
+            if(!jwtService.validateToken(token,email)){
+                throw new APIException("Invalid Token", HttpStatus.UNAUTHORIZED);
+            }
+
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
                 UserDetails userDetails = userDetailsService.loadUserByUsername(email);

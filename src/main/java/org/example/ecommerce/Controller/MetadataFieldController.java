@@ -46,13 +46,9 @@ public class MetadataFieldController {
             @RequestParam(value = "offSet",defaultValue = "0") Integer offSet,
             @RequestParam(value = "sort",defaultValue = "id") String sort,
             @RequestParam(value = "order",defaultValue = "asc") String order,
-            @RequestParam(value = "query", required = false) String query,
-            @RequestHeader(name = "Accept-Language", required = false) Locale locale
-    ){
+            @RequestParam(value = "query", required = false) String query){
 
-        List<CategoryMetadataFieldDto> fields = metadataService.getAllMetadataFields(pageSize,offSet,sort,order,query);
-
-        return fields;
+        return metadataService.getAllMetadataFields(pageSize,offSet,sort,order,query);
     }
 
     @PreAuthorize("hasRole('ADMIN')")

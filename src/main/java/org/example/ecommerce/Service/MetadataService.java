@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -69,7 +68,7 @@ public class MetadataService {
 
         List<CategoryMetadataField> fields = page.getContent();
 
-        List<CategoryMetadataFieldDto> fieldDTOS = fields.stream()
+        return fields.stream()
                 .map(field->{
                     CategoryMetadataFieldDto fieldDTO = new CategoryMetadataFieldDto();
                     fieldDTO.setId(field.getId());
@@ -77,8 +76,6 @@ public class MetadataService {
                     return fieldDTO;
                 })
                 .toList();
-
-        return fieldDTOS;
     }
 
 
@@ -87,7 +84,7 @@ public class MetadataService {
 
         Set<String> values = metadataFieldValueDTO.getValues();
 
-        if (values.size()<1){
+        if (values.isEmpty()){
             String localizedMessage = messageSource.getMessage("values.must.be.less.than.one", null, locale);
             throw new APIException(localizedMessage, HttpStatus.BAD_REQUEST);
         }
@@ -219,7 +216,7 @@ public class MetadataService {
 
         Set<String> values = metadataFieldValueDTO.getValues();
 
-        if (values.size()<1){
+        if (values.isEmpty()){
             String localizedMessage = messageSource.getMessage("values.must.be.less.than.one", null, locale);
             throw new APIException(localizedMessage,HttpStatus.BAD_REQUEST);
 
