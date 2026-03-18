@@ -1,49 +1,53 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.Auditing.DataAudit;
 
 import java.time.LocalDateTime;
 import java.util.List;
 @Getter
 @Setter
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Table(name = "Users")
-public class User {
+public class User  extends DataAudit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private String email;
-    private String firstName;
-    private String middleName;
-    private String lastName;
-    private String password;
+    @Column(nullable = false, unique = true)
+     String email;
 
-    private Boolean isDeleted;
-    private Boolean isActive;
-    private Boolean isExpired;
-    private Boolean isLocked;
+    @Column(nullable = false )
+     String firstName;
 
-    private Integer invalidAttemptCount;
+     String middleName;
 
-    private LocalDateTime passwordUpdateDate;
+     String lastName;
 
-    @OneToMany(mappedBy = "user")
-    private List<UserRole> userRoles;
+     String password;
 
-    @OneToOne(mappedBy = "user")
-    private Customer customer;
+     Boolean isDeleted;
+     Boolean isActive;
+     Boolean isExpired;
+     Boolean isLocked;
 
-    @OneToOne(mappedBy = "user")
-    private Seller seller;
+     Integer invalidAttemptCount;
 
-    @OneToMany(mappedBy = "user")
-    private List<Address> addresses;
+     LocalDateTime passwordUpdateDate;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(name = "USER_ROLE" ,
+            joinColumns = @JoinColumn(name = "USER_ID"),foreignKey = @ForeignKey(name = "FK_USER_ROLE_USER"),
+            inverseJoinColumns = @JoinColumn(name = "ROLE_ID") , inverseForeignKey = @ForeignKey(name = "FK_USER_ROLE_ROLE"))
+     List<Role> roles;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+     List<Address> addresses;
 
 }

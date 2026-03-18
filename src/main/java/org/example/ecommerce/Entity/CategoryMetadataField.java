@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -12,20 +10,21 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 @Entity
 @Table(name = "category_metadata_field")
 public class CategoryMetadataField {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
     @Column(nullable = false)
-    private String name;
+     String name;
 
     @OneToMany(mappedBy = "metadataField",
             cascade = CascadeType.ALL,
             orphanRemoval = true)
-    private List<CategoryMetadataFieldValue> fieldValues;
+     List<CategoryMetadataFieldValue> fieldValues;
 
 }

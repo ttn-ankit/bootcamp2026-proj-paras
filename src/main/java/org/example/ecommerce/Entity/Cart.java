@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -13,20 +11,21 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Cart {
 
     @EmbeddedId
-    private CartId id;
+     CartId id;
 
-    private Integer quantity;
-    private Boolean isWishlistItem;
+     Integer quantity;
+     Boolean isWishlistItem;
 
     @OneToOne
     @MapsId("customerId")
-    private Customer customer;
+     Customer customer;
 
-    @OneToMany
+    @ManyToOne
     @MapsId("productVariationId")
-    private List<ProductVariation> productVariation;
+     ProductVariation productVariation;
 
 }

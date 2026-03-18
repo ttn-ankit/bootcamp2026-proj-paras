@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -13,28 +11,34 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Product {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private String name;
-    private String description;
-    private String brand;
-    private Boolean isCancellable;
-    private Boolean isReturnable;
-    private Boolean isActive;
-    private Boolean isDeleted;
+     String name;
+     String description;
+     String brand;
+     Boolean isCancellable;
+     Boolean isReturnable;
+     Boolean isActive;
+     Boolean isDeleted;
 
     @ManyToOne
     @JoinColumn(name = "seller_id")
-    private Seller seller;
+     Seller seller;
 
     @ManyToOne
     @JoinColumn(name = "category_id")
-    private Category category;
+     Category category;
 
     @OneToMany(mappedBy = "product")
-    private List<ProductVariation> variations;
+     List<ProductVariation> variations;
+
+    @OneToMany(mappedBy = "product",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+     List<ProductReview> reviews;
 }

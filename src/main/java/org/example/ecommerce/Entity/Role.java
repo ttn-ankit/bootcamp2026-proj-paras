@@ -1,25 +1,22 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-import java.util.List;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
+import org.example.ecommerce.Entity.Enum.RoleAuthority;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+     Long Id;
 
-    private String authority;
-    @OneToMany(mappedBy = "role")
-    private List<UserRole> userRoles;
+    @Enumerated(EnumType.STRING)
+    RoleAuthority authority;
 }

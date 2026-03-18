@@ -1,10 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 import java.util.List;
 
@@ -13,21 +11,17 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Seller {
+@FieldDefaults(level = AccessLevel.PRIVATE)
+@PrimaryKeyJoinColumn(name = "USER_ID", foreignKey = @ForeignKey(name = "FK_USER_SELLER"))
+public class Seller extends User{
 
-    @Id
-    private Long userId;
-
-    private String gst;
-    private String companyName;
-    private String companyContact;
-
-    @OneToOne
-    @MapsId
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(unique = true, nullable = false)
+     String gst;
+    @Column(unique = true, nullable = false)
+     String companyName;
+     String companyContact;
 
     @OneToMany(mappedBy = "seller")
-    private List<Product> products;
+     List<Product> products;
 
 }

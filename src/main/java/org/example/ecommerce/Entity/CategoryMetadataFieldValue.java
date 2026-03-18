@@ -1,6 +1,8 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Table(
@@ -11,20 +13,21 @@ import jakarta.persistence.*;
                 )
         }
 )
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryMetadataFieldValue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
     @Column(nullable = false)
-    private String value;
+     String value;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
-    private Category category;
+     Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "metadata_field_id", nullable = false)
-    private CategoryMetadataField metadataField;
+     CategoryMetadataField metadataField;
 }

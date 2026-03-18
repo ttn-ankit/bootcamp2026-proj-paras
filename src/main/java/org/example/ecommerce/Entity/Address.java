@@ -1,30 +1,31 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE)
 public class Address {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+     Long id;
 
-    private String city;
-    private String state;
-    private String country;
-    private String addressLine;
-    private String zipCode;
-    private String label;
+
+     String city;
+     String state;
+     String country;
+     String addressLine;
+     String zipCode;
+     Boolean isDeleted = false;
+     String label;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User user;
+     User user;
 
 }
