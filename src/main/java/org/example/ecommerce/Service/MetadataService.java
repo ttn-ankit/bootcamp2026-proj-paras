@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.AddMetaDataFieldValueDto;
 import org.example.ecommerce.DTOS.Request.CategoryMetadataFieldDto;
+import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.GetACategoryDTO;
 import org.example.ecommerce.DTOS.Response.GetCategoryMetadataFieldValueBySellerDTO;
 import org.example.ecommerce.Entity.Category;
@@ -79,7 +80,7 @@ public class MetadataService {
     }
 
 
-    public void addMetadataCategoryFieldValues(AddMetaDataFieldValueDto metadataFieldValueDTO, Locale locale) {
+    public BasicResponse addMetadataCategoryFieldValues(AddMetaDataFieldValueDto metadataFieldValueDTO, Locale locale) {
 
 
         Set<String> values = metadataFieldValueDTO.getValues();
@@ -134,8 +135,8 @@ public class MetadataService {
         categoryMetadataFieldValues.setValue(csv);
 
         valueRepository.save(categoryMetadataFieldValues);
-
-
+        String response = messageSource.getMessage("message.metadata.fieldadded",null,locale);
+        return new BasicResponse(response,true);
     }
 
     public List<GetCategoryMetadataFieldValueBySellerDTO> GetCategoryAndMetadataValue(Locale locale) {
@@ -200,7 +201,7 @@ public class MetadataService {
     }
 
 
-    public void updateMetadataValues(AddMetaDataFieldValueDto metadataFieldValueDTO, Locale locale) {
+    public BasicResponse updateMetadataValues(AddMetaDataFieldValueDto metadataFieldValueDTO, Locale locale) {
 
         Category category = categoryRepository.findById(metadataFieldValueDTO.getCategoryId()).orElseThrow(
                 ()-> {
@@ -244,6 +245,7 @@ public class MetadataService {
         values1.setValue(String.join(",",valueSet));
 
         valueRepository.save(values1);
-
+        String response = messageSource.getMessage("message.metadata.fieldvalueadded",null,locale);
+        return new BasicResponse(response,true);
     }
 }

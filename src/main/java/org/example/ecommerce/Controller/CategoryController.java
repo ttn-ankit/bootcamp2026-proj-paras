@@ -32,17 +32,13 @@ public class CategoryController {
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add/new-category")
     public BasicResponse addNewCategory(@Valid @RequestBody AddCategoryDto categoryDTO, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
-        categoryService.addANewParentCategory(categoryDTO,locale);
-        String response = messageSource.getMessage("message.categorycreated",null,locale);
-        return new BasicResponse(response,true);
+        return categoryService.addANewParentCategory(categoryDTO,locale);
     }
 
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get-category-admin/{id}")
     public GetACategoryDTO getCategoryUsingId(@PathVariable Long id, @RequestHeader("Accept-Language") Locale locale){
-
         return categoryService.getCategory(id,locale);
     }
 
@@ -65,12 +61,7 @@ public class CategoryController {
     public BasicResponse updateTheCategory(@RequestParam(value = "id") Long id,
                                       @Pattern(regexp = "^[a-zA-Z'&.,-]+(?: [a-zA-Z'&.,-]+)*$" , message = "field name must be valid and at least of 3 size") @RequestParam("name") String name,
                                       @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
-
-        categoryService.updateExistingCategoryName(id,name,locale);
-        String response = messageSource.getMessage("message.categoryUpdated",null,locale);
-        return new BasicResponse(response,true);
-
+        return categoryService.updateExistingCategoryName(id,name,locale);
     }
 
 

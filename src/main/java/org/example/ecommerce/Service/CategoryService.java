@@ -6,6 +6,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.example.ecommerce.DTOS.Request.AddCategoryDto;
+import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.FilteringCategoryDetailDTO;
 import org.example.ecommerce.DTOS.Response.GetACategoryDTO;
 import org.example.ecommerce.Entity.Category;
@@ -35,7 +36,7 @@ public class CategoryService {
      ProductVariationRepository productVariationRepository;
      MessageSource messageSource;
 
-    public void addANewParentCategory(@Valid AddCategoryDto categoryDTO, Locale locale) {
+    public BasicResponse addANewParentCategory(@Valid AddCategoryDto categoryDTO, Locale locale) {
 
         if(categoryDTO.getId()==null){
 
@@ -48,7 +49,8 @@ public class CategoryService {
             Category category = new Category();
             category.setName(categoryDTO.getName());
             categoryRepository.save(category);
-            return;
+            String response = messageSource.getMessage("message.categorycreated",null,locale);
+            return new BasicResponse(response,true);
         }
 
         Long parentId = categoryDTO.getId();
@@ -98,6 +100,8 @@ public class CategoryService {
         child.setParentCategory(parent);
         categoryRepository.save(child);
 
+        String response = messageSource.getMessage("message.categorycreated",null,locale);
+        return new BasicResponse(response,true);
     }
 
     private void collectChildNamesRecursively(Category category, Set<String> names) {
@@ -214,7 +218,7 @@ public class CategoryService {
 
     }
 
-    public void updateExistingCategoryName(Long id, @Pattern(regexp = "^[a-zA-Z'&., -]{3,}$" , message = "field name must be valid and at least of 3 size") String name, Locale locale) {
+    public BasicResponse updateExistingCategoryName(Long id, @Pattern(regexp = "^[a-zA-Z'&., -]{3,}$" , message = "field name must be valid and at least of 3 size") String name, Locale locale) {
 
 
         Category category = categoryRepository.findById(id).orElseThrow(
@@ -269,6 +273,8 @@ public class CategoryService {
 
         category.setName(name);
         categoryRepository.save(category);
+        String response = messageSource.getMessage("message.categoryUpdated",null,locale);
+        return new BasicResponse(response,true);
 
     }
 

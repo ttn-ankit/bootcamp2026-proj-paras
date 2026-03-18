@@ -47,7 +47,6 @@ public class MetadataFieldController {
             @RequestParam(value = "sort",defaultValue = "id") String sort,
             @RequestParam(value = "order",defaultValue = "asc") String order,
             @RequestParam(value = "query", required = false) String query){
-
         return metadataService.getAllMetadataFields(pageSize,offSet,sort,order,query);
     }
 
@@ -55,12 +54,7 @@ public class MetadataFieldController {
     @PostMapping("/add/metadata-field-value")
     public BasicResponse addMetadataFieldValues(@Valid @RequestBody AddMetaDataFieldValueDto metadataFieldValueDTO,
                                            @RequestHeader(name = "Accept-Language", required = false) Locale locale){
-
-        metadataService.addMetadataCategoryFieldValues(metadataFieldValueDTO,locale);
-
-        String response = messageSource.getMessage("message.metadata.fieldadded",null,locale);
-        return new BasicResponse(response,true);
-
+        return metadataService.addMetadataCategoryFieldValues(metadataFieldValueDTO,locale);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -68,10 +62,7 @@ public class MetadataFieldController {
     public BasicResponse updateMetadataFieldValues(@Valid @RequestBody AddMetaDataFieldValueDto metadataFieldValueDTO,
                                               @RequestHeader(name = "Accept-Language", required = false) Locale locale){
 
-        metadataService.updateMetadataValues(metadataFieldValueDTO,locale);
-        String response = messageSource.getMessage("message.metadata.fieldvalueadded",null,locale);
-        return new BasicResponse(response,true);
-
+       return metadataService.updateMetadataValues(metadataFieldValueDTO,locale);
     }
 
 
@@ -80,7 +71,6 @@ public class MetadataFieldController {
     public List<GetCategoryMetadataFieldValueBySellerDTO> getMetadataValues(
             @RequestHeader(value = "Accept-Language",required = false) Locale locale
     ){
-
         return  metadataService.GetCategoryAndMetadataValue(locale);
     }
 }
