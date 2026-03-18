@@ -102,19 +102,10 @@ public class ForgotPasswordService {
         userRepository.save(user);
 
         forgetPasswordTokenRepo.deleteById(email);
-        removeToken(token);
         return new BasicResponse("Password reset success", 200);
     }
 
     public void setForgetTokenInDataBase(String email, String token) {
         forgetPasswordTokenRepo.save(new ForgetPasswordToken(email,token));
     }
-
-    public void removeToken(String token) {
-        String email = jwtService.extractUsername(token);
-        forgetPasswordTokenRepo.deleteByEmail(email);
-        forgetPasswordTokenRepo.flush();
-    }
-
-
 }

@@ -30,4 +30,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Object> handleException(Exception ex){
         return ResponseEntity.badRequest().body(ex.getMessage());
     }
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<Object> handleDataIntegrity(org.springframework.dao.DataIntegrityViolationException ex) {
+        return ResponseEntity.badRequest().body("Duplicate value violates unique constraint");
+    }
 }

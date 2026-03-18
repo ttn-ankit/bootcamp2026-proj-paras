@@ -56,7 +56,12 @@ public class SellerService {
         if(!sellerDTO.getPassword().equals(sellerDTO.getConfirmPassword())){
             throw new APIException("Password and Confirm Password Does not match", HttpStatus.BAD_REQUEST);
         }
-
+        if (sellerRepository.existsByGst(sellerDTO.getGst())) {
+            throw new APIException("GST already exists", HttpStatus.BAD_REQUEST);
+        }
+        if (sellerRepository.existsByCompanyName(sellerDTO.getCompanyName())) {
+            throw new APIException("Company name already exists", HttpStatus.BAD_REQUEST);
+        }
         Seller seller = new Seller();
 
         seller.setEmail(sellerDTO.getEmail());

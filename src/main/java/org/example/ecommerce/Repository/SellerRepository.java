@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface SellerRepository extends JpaRepository<Seller, Long> {
     Seller findByEmail(String email);
+    boolean existsByGst(String gst);
+    boolean existsByCompanyName(String companyName);
     @Query("SELECT s FROM Seller s WHERE s.email like %:email%")
-    public Page<Seller> findAll(Pageable pageable, @Param("email") String email);
+     Page<Seller> findAll(Pageable pageable, @Param("email") String email);
 }
