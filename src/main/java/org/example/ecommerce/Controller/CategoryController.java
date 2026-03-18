@@ -41,10 +41,9 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get-category-admin/{id}")
-    public GetACategoryDTO getCategoryUsingId(@PathVariable("id") Long id, @RequestHeader("Accept-Language") Locale locale){
+    public GetACategoryDTO getCategoryUsingId(@PathVariable Long id, @RequestHeader("Accept-Language") Locale locale){
 
-        GetACategoryDTO categoryDTO = categoryService.getCategory(id,locale);
-        return categoryDTO;
+        return categoryService.getCategory(id,locale);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,15 +56,13 @@ public class CategoryController {
             @RequestParam(value = "query",defaultValue = "") String query
     ){
 
-        List<GetACategoryDTO> categoryDTOS = categoryService.getAllCategory(pageSize,offSet,sort,order,query);
-
-        return categoryDTOS;
+        return categoryService.getAllCategory(pageSize,offSet,sort,order,query);
     }
 
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/update-category")
-    public BasicResponse updateTheCategory(@RequestParam(value = "id",required = true) Long id,
+    public BasicResponse updateTheCategory(@RequestParam(value = "id") Long id,
                                       @Pattern(regexp = "^[a-zA-Z'&.,-]+(?: [a-zA-Z'&.,-]+)*$" , message = "field name must be valid and at least of 3 size") @RequestParam("name") String name,
                                       @RequestHeader(name = "Accept-Language", required = false) Locale locale){
 
@@ -81,20 +78,14 @@ public class CategoryController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/get-category-customer")
     public List<AddCategoryDto> getCategories(@RequestParam(required = false,name = "id") Long id){
-
-
-        List<AddCategoryDto> categoryDTOS = categoryService.getCategoryByCustomer(id);
-
-
-        return categoryDTOS;
+        return categoryService.getCategoryByCustomer(id);
     }
 
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/filtering-data")
     public FilteringCategoryDetailDTO filteringCategoryDetails(@RequestParam("id") Long id){
-        FilteringCategoryDetailDTO filteringCategoryDetailDTO = categoryService.getCategoryRelatedFilteringData(id);
-        return filteringCategoryDetailDTO;
+        return categoryService.getCategoryRelatedFilteringData(id);
     }
 
 

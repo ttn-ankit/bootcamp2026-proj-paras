@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @FieldDefaults(level = AccessLevel.PRIVATE,makeFinal = true)
@@ -253,7 +252,7 @@ public class ProductService {
                             return dto;
                         }
                 )
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
 
 
@@ -311,7 +310,7 @@ public class ProductService {
                         }
 
                 )
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
 
 
@@ -392,7 +391,7 @@ public class ProductService {
                             return responseDTO;
                         }
                 )
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         return response;
     }
@@ -472,7 +471,7 @@ public class ProductService {
                             return detail;
                         }
                 )
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
 
         viewProduct.setProductVariations(productVariationDetailsList);
         return viewProduct;
@@ -518,12 +517,12 @@ public class ProductService {
                                 detail.setPrice(variation.getPrice());
                                 return detail;
                             })
-                            .collect(Collectors.toUnmodifiableList());
+                            .toList();
 
                     dto.setProductVariations(variationDetails);
                     return dto;
                 })
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
 
@@ -593,12 +592,12 @@ public class ProductService {
                                 detail.setPrice(var.getPrice());
                                 return detail;
                             })
-                            .collect(Collectors.toUnmodifiableList());
+                            .toList();
 
                     dto.setProductVariations(variationDetails);
                     return dto;
                 })
-                .collect(Collectors.toUnmodifiableList());
+                .toList();
     }
 
 

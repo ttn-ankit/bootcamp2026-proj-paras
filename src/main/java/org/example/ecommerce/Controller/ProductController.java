@@ -35,7 +35,7 @@ public class ProductController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get-product-admin/{id}")
-    public GetProductByAdminDTO getAProduct(@PathVariable("id") Long id){
+    public GetProductByAdminDTO getAProduct(@PathVariable Long id){
 
         return productService.getProductByAdmin(id);
 
@@ -76,8 +76,7 @@ public class ProductController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/view-product-customer")
     public ViewProductByCustomerDTO getProductByCustomer(@RequestParam("id") Long id){
-        ViewProductByCustomerDTO response = productService.getProductByCustomer(id);
-        return response;
+        return productService.getProductByCustomer(id);
     }
 
 
@@ -92,9 +91,7 @@ public class ProductController {
             @RequestParam(name = "order",defaultValue = "asc") String order,
             @RequestParam(value = "query", required = false) String query){
 
-        List<ViewProductByCustomerDTO> response = productService.getAllProductsByCustomer(id,pageSize,offSet,sort,order,query);
-
-        return response;
+        return productService.getAllProductsByCustomer(id,pageSize,offSet,sort,order,query);
     }
 
 
@@ -109,9 +106,8 @@ public class ProductController {
             @RequestParam(name = "order",defaultValue = "asc") String order,
             @RequestParam(value = "query", required = false) String query
     ){
-        List<ViewProductByCustomerDTO> response = productService.getSimilarProductsByCustomer(id,pageSize,offSet,sort,order,query);
 
-        return response;
+        return productService.getSimilarProductsByCustomer(id,pageSize,offSet,sort,order,query);
     }
 
 
@@ -147,22 +143,20 @@ public class ProductController {
 
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping("/get/product/{id}")
-    public AddProductDto getAProduct(@PathVariable("id") Long id, HttpServletRequest request){
+    public AddProductDto getAProduct(@PathVariable Long id, HttpServletRequest request){
 
         String token = request.getHeader("Authorization").substring(7);
-        AddProductDto product = productService.getASelectedProduct(token , id);
-        return product;
+        return productService.getASelectedProduct(token , id);
     }
 
 
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping("/get/product-variation/{id}")
-    public ProductVariationDTO getAProductVariation(@PathVariable("id") Long id, HttpServletRequest request){
+    public ProductVariationDTO getAProductVariation(@PathVariable Long id, HttpServletRequest request){
 
         String token = request.getHeader("Authorization").substring(7);
-        ProductVariationDTO variationDTO = productService.getASelectedProductVariation(token,id);
 
-        return variationDTO;
+        return productService.getASelectedProductVariation(token,id);
 
     }
 
@@ -178,8 +172,7 @@ public class ProductController {
     ){
 
         String token = request.getHeader("Authorization").substring(7);
-        List<AddProductDto> products = productService.getAllProductsOfSeller(token,pageSize,offSet,sort,order,query);
-        return products;
+        return productService.getAllProductsOfSeller(token,pageSize,offSet,sort,order,query);
 
     }
 
@@ -192,20 +185,19 @@ public class ProductController {
                                                                               @RequestParam(name = "sort",defaultValue = "id") String sort,
                                                                               @RequestParam(name = "order",defaultValue = "asc") String order,
                                                                               @RequestParam(value = "query",required = false) String query,
-                                                                              @PathVariable("id") Long id
+                                                                              @PathVariable Long id
     ){
 
         String token = request.getHeader("Authorization").substring(7);
-        List<ProductVariationDTO> products = productService.getAllProductVariations(token,pageSize,offSet,sort,order,query,id);
-        return products;
+        return productService.getAllProductVariations(token,pageSize,offSet,sort,order,query,id);
 
     }
 
 
     @PreAuthorize("hasRole('SELLER')")
     @DeleteMapping("/delete/product/{id}")
-    public BasicResponse deleteAProduct(@PathVariable("id") Long id,HttpServletRequest request,
-                                   @RequestHeader(value = "Accept-Language",required = false) Locale locale){
+    public BasicResponse deleteAProduct(@PathVariable Long id, HttpServletRequest request,
+                                        @RequestHeader(value = "Accept-Language",required = false) Locale locale){
 
         String token = request.getHeader("Authorization").substring(7);
         productService.deleteTheProduct(token,id);
