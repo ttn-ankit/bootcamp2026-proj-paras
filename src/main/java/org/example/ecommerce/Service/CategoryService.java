@@ -50,7 +50,7 @@ public class CategoryService {
             category.setName(categoryDTO.getName());
             categoryRepository.save(category);
             String response = messageSource.getMessage("message.categorycreated",null,locale);
-            return new BasicResponse(response,true);
+            return new BasicResponse(response,200);
         }
 
         Long parentId = categoryDTO.getId();
@@ -101,7 +101,7 @@ public class CategoryService {
         categoryRepository.save(child);
 
         String response = messageSource.getMessage("message.categorycreated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
     }
 
     private void collectChildNamesRecursively(Category category, Set<String> names) {
@@ -274,7 +274,7 @@ public class CategoryService {
         category.setName(name);
         categoryRepository.save(category);
         String response = messageSource.getMessage("message.categoryUpdated",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
 
     }
 

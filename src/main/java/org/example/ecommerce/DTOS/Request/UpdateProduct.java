@@ -14,7 +14,7 @@ public class UpdateProduct {
 
     @NotNull(message = "id must not be null")
      Long id;
-    @Pattern(regexp = "^[A-Za-z]{2,}(?: [A-Za-z]{2,})*$",message = "give valid name")
+    @Pattern(regexp = "^[A-Za-z0-9]+(?:[ -][A-Za-z0-9()]+)*$",message = "give valid name")
      String name;
      Boolean isCancellable;
      Boolean isRefundable;

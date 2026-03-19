@@ -77,8 +77,4 @@ public class AuthController {
     public LoginResponse regenerateLoginAcess(@RequestParam("token") String token){
         return tokenService.regenerateLoginAccess(token);
     }
-    @PostMapping("/regenerate-access")
-    public LoginResponse regenerateLoginAcess(@RequestParam("token") String token){
-        return tokenService.regenerateLoginAccess(token);
-    }
 }

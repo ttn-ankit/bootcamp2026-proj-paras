@@ -10,7 +10,6 @@ import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.FilteringCategoryDetailDTO;
 import org.example.ecommerce.DTOS.Response.GetACategoryDTO;
 import org.example.ecommerce.Service.CategoryService;
-import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,9 +24,7 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class CategoryController {
 
-
     CategoryService categoryService;
-     MessageSource messageSource;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add/new-category")
@@ -38,7 +35,7 @@ public class CategoryController {
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get-category-admin/{id}")
-    public GetACategoryDTO getCategoryUsingId(@PathVariable Long id, @RequestHeader("Accept-Language") Locale locale){
+    public GetACategoryDTO getCategoryUsingId(@PathVariable Long id, @RequestHeader(name = "Accept-Language", required = false) Locale locale){
         return categoryService.getCategory(id,locale);
     }
 

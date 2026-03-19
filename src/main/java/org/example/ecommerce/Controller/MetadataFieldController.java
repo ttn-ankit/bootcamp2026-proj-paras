@@ -9,7 +9,6 @@ import org.example.ecommerce.DTOS.Request.CategoryMetadataFieldDto;
 import org.example.ecommerce.DTOS.Response.BasicResponse;
 import org.example.ecommerce.DTOS.Response.GetCategoryMetadataFieldValueBySellerDTO;
 import org.example.ecommerce.Service.MetadataService;
-import org.springframework.context.MessageSource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -25,16 +24,13 @@ import java.util.Locale;
 public class MetadataFieldController {
 
     MetadataService metadataService;
-    MessageSource messageSource;
 
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add/metadata-field")
     public BasicResponse addMetadataFieldName(@Valid @RequestBody CategoryMetadataFieldDto dto,
                                               @RequestHeader(name = "Accept-Language",required = false) Locale locale){
 
-        Long id = metadataService.addFieldName(dto.getName(),locale);
-        Object[] ob = new Object[]{dto.getName(),id};
-        return new BasicResponse(messageSource.getMessage("message.new.metadata.field.added",ob,locale),true);
+        return metadataService.addFieldName(dto.getName(),locale);
     }
 
 

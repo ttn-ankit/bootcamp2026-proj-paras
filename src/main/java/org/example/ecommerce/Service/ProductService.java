@@ -7,10 +7,7 @@ import org.example.ecommerce.DTOS.Request.AddProductDto;
 import org.example.ecommerce.DTOS.Request.AddProductVariationDto;
 import org.example.ecommerce.DTOS.Request.UpdateProduct;
 import org.example.ecommerce.DTOS.Request.UpdateProductVariation;
-import org.example.ecommerce.DTOS.Response.GetProductByAdminDTO;
-import org.example.ecommerce.DTOS.Response.ProductVariationDTO;
-import org.example.ecommerce.DTOS.Response.ProductVariationDetail;
-import org.example.ecommerce.DTOS.Response.ViewProductByCustomerDTO;
+import org.example.ecommerce.DTOS.Response.*;
 import org.example.ecommerce.Emails.EmailService;
 import org.example.ecommerce.Entity.*;
 import org.example.ecommerce.GlobalExceptions.APIException;
@@ -25,6 +22,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,22 +38,27 @@ public class ProductService {
      SellerRepository sellerRepository;
      ProductVariationRepository productVariationRepository;
      EmailService productEmail;
-     JWTService jwtService;
 
-    public void addProduct(AddProductDto productDTO , String token) {
+    public BasicResponse addProduct(AddProductDto productDTO) {
 
         if(categoryRepository.existsByParentCategoryId(productDTO.getCategoryId())){
             throw new APIException("Parent category can not have products in product table", HttpStatus.BAD_REQUEST);
         }
         Category category = categoryRepository.findById(productDTO.getCategoryId()).get();
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
-        Product product = productRepository.findByBrandAndCategoryAndSeller(productDTO.getBrand(),category,seller);
-
-        if (product!=null && product.getName().equals(productDTO.getName())){
-            throw new APIException("product with the same name exist for the same seller same category and same brand",HttpStatus.BAD_REQUEST);
+        if (productRepository.existsByNameIgnoreCaseAndBrandIgnoreCaseAndCategoryAndSeller(
+                productDTO.getName(),
+                productDTO.getBrand(),
+                category,
+                seller
+        )) {
+            throw new APIException(
+                    "product with the same name exist for the same seller same category and same brand",
+                    HttpStatus.BAD_REQUEST
+            );
         }
 
         Product product1 = new Product();
@@ -70,15 +73,16 @@ public class ProductService {
         product1.setSeller(seller);
         productEmail.sendEmail("product name"+product1.getName()+"\nadded by "+seller.getFirstName(),email,"product Added Successfully");
         productRepository.save(product1);
+        return new BasicResponse("Product added wait for activation",200);
 
     }
 
-    public void addProductVariation(String token, AddProductVariationDto addProductVariation) {
+    public BasicResponse addProductVariation(AddProductVariationDto addProductVariation) {
         Product product = productRepository.findById(addProductVariation.getProductId()).orElseThrow(
                 ()-> new APIException("product with id "+addProductVariation.getProductId()+" is not found",HttpStatus.BAD_REQUEST)
         );
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         if(!seller.getId().equals(product.getSeller().getId())){
@@ -97,13 +101,19 @@ public class ProductService {
         String primaryImageName = product.getId().toString()+"_"+System.currentTimeMillis();
         variation.setPrimaryImageName(primaryImageName);
         variation.setMetadata(addProductVariation.getMetadata());
+        variation.setIsActive(true);
         GetAndSaveImage.uploadProductImages("/images/product/primary", addProductVariation.getPrimaryImage(),primaryImageName);
-        for(MultipartFile image : addProductVariation.getSecondaryImages()){
-            GetAndSaveImage.uploadProductImages("/images/product/secondary",image,primaryImageName+"_"+System.currentTimeMillis());
-        }
+
+        if (addProductVariation.getSecondaryImages() != null && !addProductVariation.getSecondaryImages().isEmpty()) {
+            for (MultipartFile image : addProductVariation.getSecondaryImages()) {
+                if (image != null && !image.isEmpty()) {
+                    GetAndSaveImage.uploadProductImages("/images/product/secondary", image,
+                            primaryImageName + "_" + System.currentTimeMillis());
+                }
+            }
+            }
         productVariationRepository.save(variation);
-
-
+        return new BasicResponse("Product Variation Added",200);
     }
 
 
@@ -154,72 +164,8 @@ public class ProductService {
         }
     }
 
-
-    public AddProductDto getASelectedProduct(String token, Long id) {
-
-        String email = jwtService.extractUsername(token);
-        Seller seller = sellerRepository.findByEmail(email);
-        Product product = productRepository.findById(id).orElseThrow(
-                ()-> new APIException("product with id "+id+" is not found",HttpStatus.BAD_REQUEST)
-        );
-        if(!seller.getId().equals(product.getSeller().getId()) || product.getIsDeleted()){
-            throw new APIException("You can not get the product details",HttpStatus.BAD_REQUEST);
-        }
-
-        AddProductDto productDTO = new AddProductDto();
-        productDTO.setId(product.getId());
-        productDTO.setBrand(product.getBrand());
-        productDTO.setName(product.getName());
-        productDTO.setDescription(product.getDescription());
-        productDTO.setIsRefundable(product.getIsRefundable());
-        productDTO.setIsCancellable(product.getIsCancellable());
-        productDTO.setCategoryId(product.getCategory().getId());
-
-
-        return productDTO;
-    }
-
-    public ProductVariationDTO getASelectedProductVariation(String token, Long id) {
-
-        String email = jwtService.extractUsername(token);
-        Seller seller = sellerRepository.findByEmail(email);
-
-        ProductVariation variation = productVariationRepository.findById(id).orElseThrow(
-                ()-> new APIException("product variation with id "+ id + " is not found",HttpStatus.BAD_REQUEST)
-        );
-
-        Product product = variation.getProduct();
-        if(product.getIsDeleted()){
-            throw new APIException("product deleted",HttpStatus.BAD_REQUEST);
-        }
-        if(!product.getSeller().getId().equals(seller.getId())){
-            throw new APIException("you can not get product variation details",HttpStatus.BAD_REQUEST);
-        }
-        ProductVariationDTO productVariationDTO = new ProductVariationDTO();
-        productVariationDTO.setId(variation.getId());
-        productVariationDTO.setQuantity(variation.getQuantityAvailable());
-        productVariationDTO.setMetadata(variation.getMetadata());
-        productVariationDTO.setPrice(variation.getPrice());
-        AddProductDto productDTO = new AddProductDto();
-        productDTO.setId(product.getId());
-        productDTO.setBrand(product.getBrand());
-        productDTO.setName(product.getName());
-        productDTO.setDescription(product.getDescription());
-        productDTO.setIsRefundable(product.getIsRefundable());
-        productDTO.setIsCancellable(product.getIsCancellable());
-        productDTO.setCategoryId(product.getCategory().getId());
-        productVariationDTO.setProduct(productDTO);
-        productVariationDTO.setPrimaryImage(GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
-        List<String> secondaryImage = GetAndSaveImage.getAllSecondaryImages("/images/product/secondary/",variation.getPrimaryImageName());
-        productVariationDTO.setSecondaryImages(secondaryImage);
-
-
-        return productVariationDTO;
-    }
-
-
-    public List<AddProductDto> getAllProductsOfSeller(String token, Integer pageSize, Integer offSet, String sort, String order, String query) {
-        String email = jwtService.extractUsername(token);
+    public List<AddProductDto> getAllProductsOfSeller(Integer pageSize, Integer offSet, String sort, String order, String query) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         Pageable pageable = PageRequest.of(offSet,pageSize, Sort.by(Sort.Direction.fromString(order),sort));
@@ -259,8 +205,8 @@ public class ProductService {
         return productDTOList;
     }
 
-    public List<ProductVariationDTO> getAllProductVariations(String token, Integer pageSize, Integer offSet, String sort, String order, String query, Long id) {
-        String email = jwtService.extractUsername(token);
+    public List<ProductVariationDTO> getAllProductVariations(Integer pageSize, Integer offSet, String sort, String order, String query, Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         Product product = productRepository.findById(id).orElseThrow(
@@ -317,8 +263,8 @@ public class ProductService {
         return productVariationDTOS;
     }
 
-    public void deleteTheProduct(String token, Long id) {
-        String email = jwtService.extractUsername(token);
+    public BasicResponse deleteTheProduct(Long id) {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         Product product = productRepository.findById(id).orElseThrow(
@@ -330,73 +276,74 @@ public class ProductService {
         }
 
         productRepository.delete(product);
+        return new BasicResponse("Product Deleted Success",200);
     }
 
 
-    public GetProductByAdminDTO getProductByAdmin(Long id) {
-        GetProductByAdminDTO responseDTO = new GetProductByAdminDTO();
+    public List<GetProductByAdminDTO> selectAllProducts(Integer max, Integer offset, String sort, String order, Long sellerId, Long categoryId, Long productId) {
 
-        Product product = productRepository.findProductById(id);
-        if (product==null || !product.getIsActive()){
-            throw new APIException("product with id "+id+" is not found",HttpStatus.BAD_REQUEST);
+        Pageable pageable = PageRequest.of(offset, max, Sort.by(Sort.Direction.fromString(order), sort));
+
+        Specification<Product> spec = (root, query, cb) -> cb.and(
+                cb.isTrue(root.get("isActive")),
+                cb.isFalse(root.get("isDeleted"))
+        );
+
+        if (sellerId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("seller").get("id"), sellerId));
         }
 
-        responseDTO.setId(product.getId());
-        responseDTO.setBrand(product.getBrand());
-        responseDTO.setDescription(product.getDescription());
-        responseDTO.setName(product.getName());
-        responseDTO.setIsRefundable(product.getIsRefundable());
-        responseDTO.setIsCancellable(product.getIsCancellable());
-        responseDTO.setCategoryId(product.getCategory().getId());
-        responseDTO.setCategoryName(product.getCategory().getName());
-        Map<String,String> primaryImage = new HashMap<>();
-        List<ProductVariation> productVariation = productVariationRepository.findAllByProduct(product);
-        for(ProductVariation variation : productVariation){
-            primaryImage.put(variation.getId().toString(),GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
-        }
-        responseDTO.setPrimaryImage(primaryImage);
-
-
-        return responseDTO;
-    }
-
-    public List<GetProductByAdminDTO> selectAllProducts() {
-
-        List<Product> products = productRepository.findAll();
-        if(products.size()<1){
-            throw new APIException("no product found",HttpStatus.BAD_REQUEST);
+        if (categoryId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("category").get("id"), categoryId));
         }
 
-        List<GetProductByAdminDTO> response = products.stream()
-                .filter(product -> product.getIsActive())
-                .map(
-                        product -> {
-                            GetProductByAdminDTO responseDTO = new GetProductByAdminDTO();
-                            responseDTO.setId(product.getId());
-                            responseDTO.setBrand(product.getBrand());
-                            responseDTO.setDescription(product.getDescription());
-                            responseDTO.setName(product.getName());
-                            responseDTO.setIsRefundable(product.getIsRefundable());
-                            responseDTO.setIsCancellable(product.getIsCancellable());
-                            responseDTO.setCategoryId(product.getCategory().getId());
-                            responseDTO.setCategoryName(product.getCategory().getName());
-                            Map<String,String> primaryImage = new HashMap<>();
-                            List<ProductVariation> productVariation = productVariationRepository.findAllByProduct(product);
-                            for(ProductVariation variation : productVariation){
-                                primaryImage.put(variation.getId().toString(),GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
-                            }
-                            responseDTO.setPrimaryImage(primaryImage);
+        if (productId != null) {
+            spec = spec.and((root, query, cb) ->
+                    cb.equal(root.get("id"), productId));
+        }
 
+        Page<Product> productsPage = productRepository.findAll(spec, pageable);
+        List<Product> products = productsPage.getContent();
 
-                            return responseDTO;
-                        }
-                )
+        if (products.isEmpty()) {
+            throw new APIException("no product found", HttpStatus.BAD_REQUEST);
+        }
+
+        return products.stream()
+                .map(product -> {
+                    GetProductByAdminDTO responseDTO = new GetProductByAdminDTO();
+                    responseDTO.setId(product.getId());
+                    responseDTO.setBrand(product.getBrand());
+                    responseDTO.setDescription(product.getDescription());
+                    responseDTO.setName(product.getName());
+                    responseDTO.setIsRefundable(product.getIsRefundable());
+                    responseDTO.setIsCancellable(product.getIsCancellable());
+                    responseDTO.setIsActive(product.getIsActive());
+                    responseDTO.setIsDeleted(product.getIsDeleted());
+                    responseDTO.setCategoryId(product.getCategory().getId());
+                    responseDTO.setCategoryName(product.getCategory().getName());
+
+                    Map<String, String> primaryImage = new HashMap<>();
+                    List<ProductVariation> productVariations = productVariationRepository.findAllByProduct(product);
+                    for (ProductVariation variation : productVariations) {
+                        primaryImage.put(
+                                variation.getId().toString(),
+                                GetAndSaveImage.resolveProductPrimaryImage(
+                                        "/images/product/primary/",
+                                        variation.getPrimaryImageName()
+                                )
+                        );
+                    }
+                    responseDTO.setPrimaryImage(primaryImage);
+
+                    return responseDTO;
+                })
                 .toList();
-
-        return response;
     }
 
-    public void activateTheProduct(Long id) {
+    public BasicResponse activateTheProduct(Long id) {
 
         Product product = productRepository.findById(id).orElseThrow(
                 ()-> new APIException("Product with id "+ id + " is not found",HttpStatus.BAD_REQUEST));
@@ -411,10 +358,11 @@ public class ProductService {
         product.setIsActive(true);
         productRepository.save(product);
 
+        return new BasicResponse("Product Activated", 200);
 
     }
 
-    public void deActivateTheProduct(Long id) {
+    public BasicResponse deActivateTheProduct(Long id) {
 
         Product product = productRepository.findById(id).orElseThrow(
                 ()-> new APIException("Product with id "+ id + " is not found",HttpStatus.BAD_REQUEST)
@@ -422,7 +370,7 @@ public class ProductService {
 
 
         if(!product.getIsActive()){
-            throw new APIException("product not activated already",HttpStatus.BAD_REQUEST);
+            throw new APIException("product already deactivated",HttpStatus.BAD_REQUEST);
         }
 
         String email = product.getSeller().getEmail();
@@ -430,6 +378,7 @@ public class ProductService {
         product.setIsActive(false);
         productRepository.save(product);
 
+        return new BasicResponse("Product Deactivated Successfully", 200);
 
     }
 
@@ -442,6 +391,9 @@ public class ProductService {
         if(!product.getIsActive()){
             throw new APIException("Product with id "+id+" is not yet active",HttpStatus.BAD_REQUEST);
 
+        }
+        if (product.getIsDeleted()) {
+            throw new APIException("Product with id "+id+" is deleted", HttpStatus.BAD_REQUEST);
         }
 
         List<ProductVariation> productVariation = productVariationRepository.findAllByProduct(product);
@@ -601,9 +553,9 @@ public class ProductService {
     }
 
 
-    public void updateTheProduct(String token, UpdateProduct updateProduct) {
+    public BasicResponse updateTheProduct(UpdateProduct updateProduct) {
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         Product product = productRepository.findById(updateProduct.getId()).orElseThrow(
@@ -619,10 +571,19 @@ public class ProductService {
         updateProduct.setIsCancellable(Optional.ofNullable(updateProduct.getIsCancellable()).orElse(product.getIsCancellable()));
         updateProduct.setIsRefundable(Optional.ofNullable(updateProduct.getIsRefundable()).orElse(product.getIsRefundable()));
 
-        Product product1 = productRepository.findByBrandAndCategoryAndSeller(product.getBrand(),product.getCategory(),product.getSeller());
-
-        if (!product.equals(product1) && product1.getName().equals(updateProduct.getName())){
-            throw new APIException("product with the same name exist for the same seller same category and same brand",HttpStatus.BAD_REQUEST);
+        if (updateProduct.getName() != null &&
+                productRepository.existsByNameIgnoreCaseAndBrandIgnoreCaseAndCategoryAndSellerAndIdNot(
+                        updateProduct.getName(),
+                        product.getBrand(),
+                        product.getCategory(),
+                        product.getSeller(),
+                        product.getId()
+                )
+        ) {
+            throw new APIException(
+                    "product with the same name exist for the same seller same category and same brand",
+                    HttpStatus.BAD_REQUEST
+            );
         }
 
         product.setName(updateProduct.getName());
@@ -632,16 +593,17 @@ public class ProductService {
 
         productRepository.save(product);
 
+        return new BasicResponse("Product Updated",200);
 
     }
 
-    public void updateProductVariation(String token, UpdateProductVariation updateProductVariation) {
+    public BasicResponse updateProductVariation(UpdateProductVariation updateProductVariation) {
 
         ProductVariation productVariation = productVariationRepository.findById(updateProductVariation.getId()).orElseThrow(
                 ()-> new APIException("product variation with id not found",HttpStatus.BAD_REQUEST)
         );
 
-        String email = jwtService.extractUsername(token);
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
         Seller seller = sellerRepository.findByEmail(email);
 
         Product product = Optional.ofNullable(productVariation.getProduct()).orElseThrow(
@@ -679,9 +641,8 @@ public class ProductService {
                 }
             }
         }
-
-
         productVariationRepository.save(productVariation);
+        return new BasicResponse("Product Variation Updated",200);
 
     }
 }

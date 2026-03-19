@@ -1,6 +1,5 @@
 package org.example.ecommerce.Controller;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +20,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Locale;
 
 @Validated
 @RestController
@@ -30,56 +28,41 @@ import java.util.Locale;
 @RequiredArgsConstructor
 public class ProductController {
      ProductService productService;
-     MessageSource messageSource;
-
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/get-product-admin/{id}")
-    public GetProductByAdminDTO getAProduct(@PathVariable Long id){
-
-        return productService.getProductByAdmin(id);
-
-    }
 
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/get-products-admin")
-    public List<GetProductByAdminDTO> getAllProducts(){
-
-        return productService.selectAllProducts();
+    public List<GetProductByAdminDTO> getAllProducts(
+            @RequestParam(value = "max", defaultValue = "10") Integer max,
+            @RequestParam(value = "offset", defaultValue = "0") Integer offset,
+            @RequestParam(value = "sort", defaultValue = "id") String sort,
+            @RequestParam(value = "order", defaultValue = "asc") String order,
+            @RequestParam(value = "sellerId", required = false) Long sellerId,
+            @RequestParam(value = "categoryId", required = false) Long categoryId,
+            @RequestParam(value = "productId", required = false) Long productId
+    ) {
+        return productService.selectAllProducts(max, offset, sort, order, sellerId, categoryId, productId);
     }
-
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/activate-product")
-    public BasicResponse activateProduct(@RequestParam("id") Long id, @RequestHeader(name = "Accept-Language",required = false) Locale locale){
+    public BasicResponse activateProduct(@RequestParam("id") Long id){
 
-        productService.activateTheProduct(id);
-        String response = messageSource.getMessage("message.product.activated",null,locale);
-        return new BasicResponse(response,true);
-
+        return productService.activateTheProduct(id);
     }
 
 
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/deactivate-product")
-    public BasicResponse deActivateProduct(@RequestParam("id") Long id,@RequestHeader(name = "Accept-Language",required = false) Locale locale){
+    public BasicResponse deActivateProduct(@RequestParam("id") Long id){
 
-        productService.deActivateTheProduct(id);
-        String response = messageSource.getMessage("message.product.deactivated",null,locale);
-        return new BasicResponse(response,true);
-
+        return productService.deActivateTheProduct(id);
     }
-
-
-
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/view-product-customer")
     public ViewProductByCustomerDTO getProductByCustomer(@RequestParam("id") Long id){
         return productService.getProductByCustomer(id);
     }
-
-
 
     @PreAuthorize("hasRole('CUSTOMER')")
     @GetMapping("/view-all-products-customer")
@@ -110,125 +93,61 @@ public class ProductController {
         return productService.getSimilarProductsByCustomer(id,pageSize,offSet,sort,order,query);
     }
 
-
-
-
     @PreAuthorize("hasRole('SELLER')")
     @PostMapping("/add/product")
-    public BasicResponse addNewProduct(@Valid @RequestBody AddProductDto productDTO, HttpServletRequest request,
-                                       @RequestHeader(value = "Accept-Language",required = false) Locale locale){
-
-        String token = request.getHeader("Authorization").substring(7);
-        productService.addProduct(productDTO,token);
-        String response = messageSource.getMessage("message.product.new.added",null,locale);
-
-        return new BasicResponse(response,true);
-
+    public BasicResponse addNewProduct(@Valid @RequestBody AddProductDto productDTO){
+        return productService.addProduct(productDTO);
     }
 
     @PreAuthorize("hasRole('SELLER')")
     @PostMapping(value = "/add/product-variation",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public BasicResponse addProductVariation(@Valid @ModelAttribute AddProductVariationDto productVariation, HttpServletRequest request,
-                                             @RequestHeader(value = "Accept-Language",required = false) Locale locale){
+    public BasicResponse addProductVariation(@Valid @ModelAttribute AddProductVariationDto productVariation){
 
-        String token = request.getHeader("Authorization").substring(7);
-
-        productService.addProductVariation(token,productVariation);
-        String response = messageSource.getMessage("message.product.variation.added",null,locale);
-        return new BasicResponse(response,true);
-
-
+        return productService.addProductVariation(productVariation);
     }
-
-
-    @PreAuthorize("hasRole('SELLER')")
-    @GetMapping("/get/product/{id}")
-    public AddProductDto getAProduct(@PathVariable Long id, HttpServletRequest request){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return productService.getASelectedProduct(token , id);
-    }
-
-
-    @PreAuthorize("hasRole('SELLER')")
-    @GetMapping("/get/product-variation/{id}")
-    public ProductVariationDTO getAProductVariation(@PathVariable Long id, HttpServletRequest request){
-
-        String token = request.getHeader("Authorization").substring(7);
-
-        return productService.getASelectedProductVariation(token,id);
-
-    }
-
-
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping("/get/all-products")
-    public List<AddProductDto> getAllProductsBYSeller(HttpServletRequest request,
-                                                      @RequestParam(name = "pageSize",defaultValue = "10") Integer pageSize,
+    public List<AddProductDto> getAllProductsBYSeller(@RequestParam(name = "pageSize",defaultValue = "10") Integer pageSize,
                                                       @RequestParam(name = "offSet",defaultValue = "0") Integer offSet,
                                                       @RequestParam(name = "sort",defaultValue = "id") String sort,
                                                       @RequestParam(name = "order",defaultValue = "asc") String order,
                                                       @RequestParam(name = "query", required = false) String query
     ){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return productService.getAllProductsOfSeller(token,pageSize,offSet,sort,order,query);
-
+        return productService.getAllProductsOfSeller(pageSize,offSet,sort,order,query);
     }
 
 
     @PreAuthorize("hasRole('SELLER')")
     @GetMapping("/get/product-variations/{id}")
-    public List<ProductVariationDTO> getAllProductVariationsOfProductBySeller(HttpServletRequest request,
-                                                                              @RequestParam(name = "pageSize",defaultValue = "10") Integer pageSize,
+    public List<ProductVariationDTO> getAllProductVariationsOfProductBySeller(@RequestParam(name = "pageSize",defaultValue = "10") Integer pageSize,
                                                                               @RequestParam(name = "offSet",defaultValue = "0") Integer offSet,
                                                                               @RequestParam(name = "sort",defaultValue = "id") String sort,
                                                                               @RequestParam(name = "order",defaultValue = "asc") String order,
                                                                               @RequestParam(value = "query",required = false) String query,
                                                                               @PathVariable Long id
     ){
-
-        String token = request.getHeader("Authorization").substring(7);
-        return productService.getAllProductVariations(token,pageSize,offSet,sort,order,query,id);
-
+        return productService.getAllProductVariations(pageSize,offSet,sort,order,query,id);
     }
 
 
     @PreAuthorize("hasRole('SELLER')")
     @DeleteMapping("/delete/product/{id}")
-    public BasicResponse deleteAProduct(@PathVariable Long id, HttpServletRequest request,
-                                        @RequestHeader(value = "Accept-Language",required = false) Locale locale){
+    public BasicResponse deleteAProduct(@PathVariable Long id){
 
-        String token = request.getHeader("Authorization").substring(7);
-        productService.deleteTheProduct(token,id);
-        String response = messageSource.getMessage("message.product.deleted",null,locale);
-        return new BasicResponse(response,true);
-
+        return productService.deleteTheProduct(id);
     }
 
     @PreAuthorize("hasRole('SELLER')")
     @PutMapping("/update-product")
-    public BasicResponse updateProduct(HttpServletRequest request, @Valid @RequestBody UpdateProduct updateProduct,
-                                  @RequestHeader(value = "Accept-Language",required = false) Locale locale){
+    public BasicResponse updateProduct(@Valid @RequestBody UpdateProduct updateProduct){
 
-        String token = request.getHeader("Authorization").substring(7);
-        productService.updateTheProduct(token,updateProduct);
-        String response = messageSource.getMessage("message.product.updated",null,locale);
-        return new BasicResponse(response,true);
-
+        return productService.updateTheProduct(updateProduct);
     }
 
     @PreAuthorize("hasRole('SELLER')")
     @PutMapping(value = "/update-product-variation",consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public BasicResponse updateProductVariation(HttpServletRequest request, @Valid @ModelAttribute UpdateProductVariation updateProductVariation,
-                                           @RequestHeader(value = "Accept-Language",required = false) Locale locale){
-
-        String token = request.getHeader("Authorization").substring(7);
-
-        productService.updateProductVariation(token,updateProductVariation);
-        String response = messageSource.getMessage("message.product.variation.updated",null,locale);
-        return new BasicResponse(response,true);
-
+    public BasicResponse updateProductVariation(@Valid @ModelAttribute UpdateProductVariation updateProductVariation){
+       return productService.updateProductVariation(updateProductVariation);
     }
 
 }

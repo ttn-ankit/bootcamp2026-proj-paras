@@ -38,7 +38,7 @@ public class MetadataService {
     CategoryRepository categoryRepository;
     CategoryMetadataFieldValueRepository valueRepository;
 
-    public Long addFieldName(String name, Locale locale) {
+    public BasicResponse addFieldName(String name, Locale locale) {
         if(repository.existsByName(name)){
 
             String message = messageSource.getMessage("field.already.exists", null, locale);
@@ -49,7 +49,8 @@ public class MetadataService {
         CategoryMetadataField field = new CategoryMetadataField();
         field.setName(name.toLowerCase());
         CategoryMetadataField myField = repository.save(field);
-        return myField.getId();
+        Object[] ob = new Object[]{name,myField.getId()};
+        return new BasicResponse(messageSource.getMessage("message.new.metadata.field.added",ob,locale),200);
     }
 
 
@@ -136,7 +137,7 @@ public class MetadataService {
 
         valueRepository.save(categoryMetadataFieldValues);
         String response = messageSource.getMessage("message.metadata.fieldadded",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
     }
 
     public List<GetCategoryMetadataFieldValueBySellerDTO> GetCategoryAndMetadataValue(Locale locale) {
@@ -246,6 +247,6 @@ public class MetadataService {
 
         valueRepository.save(values1);
         String response = messageSource.getMessage("message.metadata.fieldvalueadded",null,locale);
-        return new BasicResponse(response,true);
+        return new BasicResponse(response,200);
     }
 }

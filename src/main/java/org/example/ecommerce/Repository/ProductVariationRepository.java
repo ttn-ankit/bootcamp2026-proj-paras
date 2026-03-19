@@ -14,7 +14,6 @@ import java.util.List;
 
 @Repository
 public interface ProductVariationRepository extends JpaRepository<ProductVariation,Long> {
-    List<ProductVariation> findAllByProduct(Product product, Pageable pageable);
 
 
     List<ProductVariation> findAllByProduct(Product product);
