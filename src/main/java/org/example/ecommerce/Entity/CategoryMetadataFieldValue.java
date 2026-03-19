@@ -1,33 +1,31 @@
 package org.example.ecommerce.Entity;
 
 import jakarta.persistence.*;
-import lombok.AccessLevel;
+import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 @Entity
-@Table(
-        name = "category_metadata_field_value",
-        uniqueConstraints = {
-                @UniqueConstraint(
-                        columnNames = {"category_id", "metadata_field_id", "value"}
-                )
-        }
-)
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Table(name = "category_metadata_field_value")
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CategoryMetadataFieldValue {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-     Long id;
+    @EmbeddedId
+     CategoryMetadataFieldValuesKey id;
 
     @Column(nullable = false)
      String value;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @ManyToOne
+    @MapsId("categoryId")
+    @JoinColumn(name = "category_id")
      Category category;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "metadata_field_id", nullable = false)
+    @ManyToOne
+    @MapsId("categoryMetaDataFieldId")
+    @JoinColumn(name = "metadata_field_id")
      CategoryMetadataField metadataField;
 }

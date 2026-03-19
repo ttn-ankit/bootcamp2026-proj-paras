@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -22,6 +23,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
     List<Category> findAllByParentCategoryIdIsNull();
 
     boolean existsByParentCategoryId(Long id);
+
+    @Query("SELECT c FROM Category c WHERE c NOT IN (SELECT DISTINCT c2.parentCategory FROM Category c2 WHERE c2.parentCategory IS NOT NULL)")
+    List<Category> findAllNotInParentCategory();
 
     Page<Category> findAll(Specification<Category> spec, Pageable pageable);
 }

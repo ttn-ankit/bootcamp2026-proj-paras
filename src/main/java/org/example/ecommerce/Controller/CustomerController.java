@@ -86,7 +86,7 @@ public class CustomerController {
     @PreAuthorize("hasRole('CUSTOMER')")
     @PatchMapping("/update-address/{id}")
     public BasicResponse updateMyAddress(
-            @PathVariable(value = "id") Long id,
+            @PathVariable Long id,
             @RequestParam(value = "city", required = false)
             @Pattern(regexp = "^[A-Za-z]+(?: [A-Za-z]+)*$", message = "City must only contain letters and single spaces between words.")
             String city,

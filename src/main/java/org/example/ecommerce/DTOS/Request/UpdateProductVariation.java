@@ -22,7 +22,7 @@ public class UpdateProductVariation {
     @Min(value = 1, message = "Quantity must be greater than zero")
      Integer quantity;
     @Min(value = 1, message = "price must be greater than zero")
-     Long price;
+     Double price;
      Map<String,String> metadata;
      MultipartFile primaryImage;
      List<MultipartFile> secondaryImages;
