@@ -16,5 +16,5 @@ public class AddCategoryDto {
     @Pattern(regexp = "^[a-zA-Z'&.,-]+(?: [a-zA-Z'&.,-]+)*$" , message = "field name must be valid and at least of 3 size")
      String name;
 
-     Long id;
+     Long parent_id;
 }
