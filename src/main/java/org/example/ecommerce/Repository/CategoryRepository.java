@@ -28,4 +28,5 @@ public interface CategoryRepository extends JpaRepository<Category, Long>, JpaSp
     List<Category> findAllNotInParentCategory();
 
     Page<Category> findAll(Specification<Category> spec, Pageable pageable);
+    boolean existsByNameIgnoreCase(String name);
 }

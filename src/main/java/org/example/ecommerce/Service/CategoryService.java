@@ -38,7 +38,12 @@ public class CategoryService {
 
     public BasicResponse addANewParentCategory(@Valid AddCategoryDto categoryDTO, Locale locale) {
 
-        if(categoryDTO.getId()==null){
+        String name = categoryDTO.getName();
+        if (categoryRepository.existsByNameIgnoreCase(name)) {
+            String localizedMessage = messageSource.getMessage("category.name.already.exists", null, locale);
+            throw new APIException(localizedMessage, HttpStatus.BAD_REQUEST);
+        }
+        if(categoryDTO.getParent_id()==null){
 
             if(categoryRepository.existsByNameIgnoreCaseAndParentCategoryIsNull(categoryDTO.getName())){
                 String localizedMessage = messageSource.getMessage("category.name.already.exists", null, locale);
@@ -53,7 +58,7 @@ public class CategoryService {
             return new BasicResponse(response,200);
         }
 
-        Long parentId = categoryDTO.getId();
+        Long parentId = categoryDTO.getParent_id();
 
         if(productRepository.existsByCategoryId(parentId)){
             String localizedMessage = messageSource.getMessage("category.assigned.cannot.become.parent", null, locale);
@@ -124,7 +129,6 @@ public class CategoryService {
         categoryDTO.setId(category.getId());
         categoryDTO.setName(category.getName());
 
-        // getting all parents upto root
         GetACategoryDTO temp = categoryDTO;
         Category parent = category.getParentCategory();
         while(parent!=null){
@@ -158,6 +162,7 @@ public class CategoryService {
                 GetACategoryDTO childDTO = new GetACategoryDTO();
                 childDTO.setId(child.getId());
                 childDTO.setName(child.getName());
+                populateChildren(child, childDTO);
                 dto.getChild().add(childDTO);
             }
         }
@@ -170,13 +175,16 @@ public class CategoryService {
 
         DynamicSpecification<Category> dynamicSpecification = new DynamicSpecification<>();
         Specification<Category> spec = dynamicSpecification.build(query);
+        Specification<Category> rootSpec = (root, q, cb) -> cb.isNull(root.get("parentCategory"));
 
-        Page<Category> categories;
+        Specification<Category> finalSpec;
         if (spec != null) {
-            categories = categoryRepository.findAll(spec, pageable);
+            finalSpec = spec.and(rootSpec);
         } else {
-            categories = categoryRepository.findAll(pageable);
+            finalSpec = rootSpec;
         }
+
+        Page<Category> categories = categoryRepository.findAll(finalSpec, pageable);
 
 
         List<GetACategoryDTO> categoryDTOS = categories.getContent().stream()
@@ -231,17 +239,11 @@ public class CategoryService {
 
         Category parent = category.getParentCategory();
         if(parent==null){
-            /*
-            1. check all at root level with same name
-            2 check name of all children
-             */
-            // 1
             if(categoryRepository.existsByNameIgnoreCaseAndParentCategoryIsNull(name)){
                 String localizedMessage = messageSource.getMessage("category.name.already.exists", new Object[]{name}, locale);
                 throw new APIException(localizedMessage,HttpStatus.BAD_REQUEST);
 
             }
-            //2
             Set<String> descendantNames = new HashSet<>();
             collectChildNamesRecursively(category, descendantNames);
             if (descendantNames.contains(name)) {
@@ -250,11 +252,6 @@ public class CategoryService {
 
         }
         else{
-            /*
-            1 check all parents name
-            2 check child name
-             */
-            // 1
             Category temp = parent;
             while(temp!=null){
                 if (temp.getName().equals(name)){
@@ -262,7 +259,6 @@ public class CategoryService {
                 }
                 temp = temp.getParentCategory();
             }
-            //2
             Set<String> descendantNames = new HashSet<>();
             collectChildNamesRecursively(parent, descendantNames);
             if (descendantNames.contains(name)) {
@@ -290,7 +286,7 @@ public class CategoryService {
             List<Category> categories = categoryRepository.findAllByParentCategoryId(id);
             if(categories==null){
                 AddCategoryDto addCategoryDTO = new AddCategoryDto();
-                addCategoryDTO.setId(category.getId());
+                addCategoryDTO.setParent_id(category.getId());
                 addCategoryDTO.setName(category.getName());
                 categoryDTOS.add(addCategoryDTO);
                 return categoryDTOS;
@@ -299,7 +295,7 @@ public class CategoryService {
             categoryDTOS = categories.stream()
                     .map(category1 -> {
                                 AddCategoryDto addCategoryDTO = new AddCategoryDto();
-                                addCategoryDTO.setId(category1.getId());
+                                addCategoryDTO.setParent_id(category1.getId());
                                 addCategoryDTO.setName(category1.getName());
                                 return addCategoryDTO;
                             }
@@ -317,7 +313,7 @@ public class CategoryService {
                         category -> {
                             AddCategoryDto addCategoryDTO = new AddCategoryDto();
                             addCategoryDTO.setName(category.getName());
-                            addCategoryDTO.setId(category.getId());
+                            addCategoryDTO.setParent_id(category.getId());
                             return addCategoryDTO;
                         }
                 )

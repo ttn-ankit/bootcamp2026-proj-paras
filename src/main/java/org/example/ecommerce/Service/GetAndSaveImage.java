@@ -19,7 +19,7 @@ public class GetAndSaveImage {
         for (String ext : exts) {
             File file = new File(basePath + userId + ext);
             if (file.exists()) {
-                return "http://localhost:8080/images/user/" + userId + ext;
+                return "http://localhost:8080/api/user/images/" + userId;
             }
         }
 
