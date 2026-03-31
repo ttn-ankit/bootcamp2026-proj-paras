@@ -52,6 +52,7 @@ public class CustomerService {
      AddressRepository addressRepository;
      MessageSource messageSource;
      JWTService jwtService;
+     GetAndSaveImage imageStorage;
 
     public BasicResponse registerCustomer(CustomerDto dto) {
         if(!dto.getPassword().equals(dto.getConfirmPassword())){
@@ -298,7 +299,7 @@ public class CustomerService {
         customerProfile.setLastName(customer.getLastName());
         customerProfile.setContact(customer.getContact());
         customerProfile.setIsActive(customer.getIsActive());
-        String imageUrl = GetAndSaveImage.resolveImageUrl(customer.getId());
+        String imageUrl = imageStorage.resolveImageUrl(customer.getId());
         customerProfile.setImage(imageUrl);
         return customerProfile;
 
@@ -340,30 +341,7 @@ public class CustomerService {
         if(contact!=null) customer.setContact(contact);
 
         if (image != null && !image.isEmpty()) {
-            String originalFilename = image.getOriginalFilename();
-            String extension = "";
-
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-
-            List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
-            if (!allowedExtensions.contains(extension.toLowerCase())) {
-                throw new IllegalArgumentException("Invalid file type. Only JPG, JPEG, PNG, and WEBP are allowed.");
-            }
-
-            String uploadFolder = "images/user";
-            Path uploadPath = Paths.get(uploadFolder).toAbsolutePath();
-            try {
-                Files.createDirectories(uploadPath);
-            } catch (IOException ignored) {
-
-            }
-            Path imagePath = uploadPath.resolve(customer.getId() + extension);
-            try {
-                image.transferTo(imagePath.toFile());
-            } catch (IOException ignored) {
-            }
+            imageStorage.uploadUserImage(customer.getId(),  image);
         }
 
         customerRepository.save(customer);

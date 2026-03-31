@@ -49,6 +49,7 @@ public class SellerService {
      EmailService accountActivatedEmail;
     RoleRepository roleRepository;
     MessageSource messageSource;
+    GetAndSaveImage imageStorage;
 
    AddressRepository addressRepository;
 
@@ -233,7 +234,7 @@ public class SellerService {
 
         sellerProfileViewByHimselfDTO.setAddress(addressDTO);
 
-        String imageUrl = GetAndSaveImage.resolveImageUrl(seller.getId());
+        String imageUrl = imageStorage.resolveImageUrl(seller.getId());
         sellerProfileViewByHimselfDTO.setImage(imageUrl);
 
         return sellerProfileViewByHimselfDTO;
@@ -285,31 +286,7 @@ public class SellerService {
         seller.setLastName(Optional.ofNullable(lastName).orElse(seller.getLastName()));
 
         if (image != null && !image.isEmpty()) {
-            String originalFilename = image.getOriginalFilename();
-            String extension = "";
-
-            if (originalFilename != null && originalFilename.contains(".")) {
-                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            }
-
-            List<String> allowedExtensions = List.of(".jpg", ".jpeg", ".png", ".bmp");
-            if (!allowedExtensions.contains(extension.toLowerCase())) {
-                throw new IllegalArgumentException("Invalid file type. Only JPG, JPEG, PNG, and WEBP are allowed.");
-            }
-
-            String uploadFolder = "images/user";
-            Path uploadPath = Paths.get(uploadFolder).toAbsolutePath();
-            try {
-                Files.createDirectories(uploadPath);
-            } catch (IOException e) {
-
-            }
-            Path imagePath = uploadPath.resolve(seller.getId() + extension);
-            try {
-                image.transferTo(imagePath.toFile());
-            } catch (IOException e) {
-
-            }
+            imageStorage.uploadUserImage(seller.getId(),  image);
         }
         sellerRepository.save(seller);
         return new BasicResponse("Profile Updated",200);

@@ -38,6 +38,7 @@ public class ProductService {
      SellerRepository sellerRepository;
      ProductVariationRepository productVariationRepository;
      EmailService productEmail;
+     GetAndSaveImage imageStorage;
 
     public BasicResponse addProduct(AddProductDto productDTO) {
 
@@ -102,12 +103,12 @@ public class ProductService {
         variation.setPrimaryImageName(primaryImageName);
         variation.setMetadata(addProductVariation.getMetadata());
         variation.setIsActive(true);
-        GetAndSaveImage.uploadProductImages("/images/product/primary", addProductVariation.getPrimaryImage(),primaryImageName);
+        imageStorage.uploadProductImages("/images/product/primary", addProductVariation.getPrimaryImage(),primaryImageName);
 
         if (addProductVariation.getSecondaryImages() != null && !addProductVariation.getSecondaryImages().isEmpty()) {
             for (MultipartFile image : addProductVariation.getSecondaryImages()) {
                 if (image != null && !image.isEmpty()) {
-                    GetAndSaveImage.uploadProductImages("/images/product/secondary", image,
+                    imageStorage.uploadProductImages("/images/product/secondary", image,
                             primaryImageName + "_" + System.currentTimeMillis());
                 }
             }
@@ -249,8 +250,8 @@ public class ProductService {
                             productDTO.setIsCancellable(product.getIsCancellable());
                             productDTO.setCategoryId(product.getCategory().getId());
                             dto.setProduct(productDTO);
-                            dto.setPrimaryImage(GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
-                            List<String> secondaryImage = GetAndSaveImage.getAllSecondaryImages("/images/product/secondary/",variation.getPrimaryImageName());
+                            dto.setPrimaryImage(imageStorage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
+                            List<String> secondaryImage = imageStorage.getAllSecondaryImages("/images/product/secondary/",variation.getPrimaryImageName());
                             dto.setSecondaryImages(secondaryImage);
                             return dto;
                         }
@@ -330,7 +331,7 @@ public class ProductService {
                     for (ProductVariation variation : productVariations) {
                         primaryImage.put(
                                 variation.getId().toString(),
-                                GetAndSaveImage.resolveProductPrimaryImage(
+                                imageStorage.resolveProductPrimaryImage(
                                         "/images/product/primary/",
                                         variation.getPrimaryImageName()
                                 )
@@ -417,7 +418,7 @@ public class ProductService {
                         variation->{
                             ProductVariationDetail detail = new ProductVariationDetail();
                             detail.setMetadata(variation.getMetadata());
-                            detail.setPrimaryImage(GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
+                            detail.setPrimaryImage(imageStorage.resolveProductPrimaryImage("/images/product/primary/",variation.getPrimaryImageName()));
                             detail.setQuantity(variation.getQuantityAvailable());
                             detail.setPrice(variation.getPrice());
                             return detail;
@@ -464,7 +465,7 @@ public class ProductService {
                             .map(variation -> {
                                 ProductVariationDetail detail = new ProductVariationDetail();
                                 detail.setMetadata(variation.getMetadata());
-                                detail.setPrimaryImage(GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/", variation.getPrimaryImageName()));
+                                detail.setPrimaryImage(imageStorage.resolveProductPrimaryImage("/images/product/primary/", variation.getPrimaryImageName()));
                                 detail.setQuantity(variation.getQuantityAvailable());
                                 detail.setPrice(variation.getPrice());
                                 return detail;
@@ -539,7 +540,7 @@ public class ProductService {
                             .map(var -> {
                                 ProductVariationDetail detail = new ProductVariationDetail();
                                 detail.setMetadata(var.getMetadata());
-                                detail.setPrimaryImage(GetAndSaveImage.resolveProductPrimaryImage("/images/product/primary/", var.getPrimaryImageName()));
+                                detail.setPrimaryImage(imageStorage.resolveProductPrimaryImage("/images/product/primary/", var.getPrimaryImageName()));
                                 detail.setQuantity(var.getQuantityAvailable());
                                 detail.setPrice(var.getPrice());
                                 return detail;
@@ -625,7 +626,7 @@ public class ProductService {
         if (updateProductVariation.getPrimaryImage()!=null && !updateProductVariation.getPrimaryImage().isEmpty()){
             String primaryImageName = product.getId().toString()+System.currentTimeMillis();
             productVariation.setPrimaryImageName(primaryImageName);
-            GetAndSaveImage.uploadProductImages("/images/product/primary", updateProductVariation.getPrimaryImage(),primaryImageName);
+            imageStorage.uploadProductImages("/images/product/primary", updateProductVariation.getPrimaryImage(),primaryImageName);
         }
 
         List<MultipartFile> files = updateProductVariation.getSecondaryImages();
@@ -637,7 +638,7 @@ public class ProductService {
                 MultipartFile image = files.get(i);
                 if (image != null && !image.isEmpty()) {
                     String filename = baseName + "_" + timestamp + "_" + i;
-                    GetAndSaveImage.uploadProductImages("/images/product/secondary", image, filename);
+                    imageStorage.uploadProductImages("/images/product/secondary", image, filename);
                 }
             }
         }
